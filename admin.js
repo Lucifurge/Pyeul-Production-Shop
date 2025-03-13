@@ -1,9 +1,11 @@
-document.addEventListener("DOMContentLoaded", () => { 
+document.addEventListener("DOMContentLoaded", () => {
   // Inject CSS
   const style = document.createElement("style");
   style.innerHTML = `
-    .topnav { background-color: #333; color: #fff; padding: 10px 20px; display: flex; justify-content: space-between; }
-    .sidebar { position: fixed; top: 50px; left: 0; width: 200px; height: 100%; background-color: #222; padding-top: 20px; transition: left 0.3s; }
+    .topnav { background-color: #333; color: #fff; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+    .toggle-btn { font-size: 20px; cursor: pointer; }
+    .sidebar { position: fixed; top: 50px; left: 0; width: 200px; height: 100%; background-color: #222; padding-top: 20px; transition: transform 0.3s ease; transform: translateX(0); }
+    .sidebar.hide { transform: translateX(-100%); }
     .sidebar a { padding: 10px 20px; color: #fff; display: block; text-decoration: none; }
     .sidebar a:hover { background-color: #444; }
     .main-content { margin-left: 200px; padding: 20px; transition: margin-left 0.3s ease; }
@@ -19,10 +21,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // Create Admin Panel Layout
   document.body.innerHTML = `
     <div class="topnav">
-      <button class="toggle-btn" id="toggleSidebar">☰</button>
+      <span class="toggle-btn" id="toggleSidebar">☰</span>
       <a href="index.html">Visit Website</a>
     </div>
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
       <a href="#" id="navHome">Home</a>
       <a href="#" id="navAddProduct">Add Product</a>
       <a href="#" id="navProducts">Products</a>
@@ -73,8 +75,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Sidebar Toggle
   document.getElementById("toggleSidebar").addEventListener("click", () => {
-    document.querySelector(".sidebar").classList.toggle("full-width");
-    document.querySelector(".main-content").classList.toggle("full-width");
+    const sidebar = document.getElementById("sidebar");
+    const mainContent = document.querySelector(".main-content");
+
+    sidebar.classList.toggle("hide");
+    mainContent.classList.toggle("full-width");
   });
 
   // Retrieve Stored Products
