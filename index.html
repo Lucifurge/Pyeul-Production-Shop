@@ -6,12 +6,14 @@
   <title>Pyeul Production Shop</title>
   <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
   <style>
-    body {
+    html, body {
+      height: 100%;
+      margin: 0;
       font-family: Arial, sans-serif;
       font-weight: bold;
-      margin: 0;
       background-color: #000;
     }
+    /* Particles container */
     #particles-js {
       position: fixed;
       width: 100%;
@@ -19,6 +21,10 @@
       z-index: -1;
       top: 0;
       left: 0;
+    }
+    /* Wrap main content and provide bottom padding for footer */
+    .content {
+      padding-bottom: 60px; /* Reserve space for footer */
     }
     .title-container {
       text-align: center;
@@ -60,10 +66,13 @@
       border-radius: 8px;
       margin-bottom: 10px;
     }
+    /* Sticky Footer */
     .footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
       text-align: center;
       color: #ff69b4;
-      margin-top: 50px;
       padding: 10px 0;
       border-top: 2px solid #ff69b4;
       background: rgba(0, 0, 0, 0.9);
@@ -103,83 +112,29 @@
   </style>
 </head>
 <body>
-  <div id="particles-js"></div> 
-
-  <div class="title-container">
-    <h1>ıllı Pyeul Productions Shop</h1>
-  </div>
-
-  <!-- Container where products will be dynamically loaded -->
-  <div class="container" id="productsContainer"></div>
-
-  <!-- Modal for product details -->
-  <div id="product-modal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal()">&times;</span>
-      <h2 id="modal-title"></h2>
-      <p id="modal-description"></p>
-      <img id="modal-image" src="" alt="Product Image">
+  <div id="particles-js"></div>
+  <div class="content">
+    <div class="title-container">
+      <h1>ıllı Pyeul Productions Shop</h1>
+    </div>
+    <!-- Container where products will be dynamically loaded -->
+    <div class="container" id="productsContainer"></div>
+    <!-- Modal for product details -->
+    <div id="product-modal" class="modal">
+      <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h2 id="modal-title"></h2>
+        <p id="modal-description"></p>
+        <img id="modal-image" src="" alt="Product Image">
+      </div>
     </div>
   </div>
-
   <div class="footer">
     <p>© Copyright All rights reserved 2025</p>
   </div>
-
   <script>
     // Initialize particles animation
     particlesJS("particles-js", {
       particles: {
         number: { value: 100 },
-        size: { value: 3 },
-        move: { speed: 2 },
-        color: { value: "#ff69b4" },
-        line_linked: {
-          enable: true,
-          distance: 150,
-          color: "#ff69b4",
-          opacity: 0.4,
-          width: 1
-        }
-      }
-    });
-
-    // Function to show the product modal
-    function showModal(title, description, image) {
-      document.getElementById('modal-title').innerText = title;
-      document.getElementById('modal-description').innerText = description;
-      const modalImage = document.getElementById('modal-image');
-      if (image) {
-        modalImage.src = image;
-        modalImage.style.display = "block";
-      } else {
-        modalImage.style.display = "none";
-      }
-      document.getElementById('product-modal').style.display = 'flex';
-    }
-
-    function closeModal() {
-      document.getElementById('product-modal').style.display = 'none';
-    }
-
-    // Dynamically load products from localStorage
-    document.addEventListener("DOMContentLoaded", function() {
-      let products = JSON.parse(localStorage.getItem("products")) || [];
-      const container = document.getElementById("productsContainer");
-      container.innerHTML = "";
-      products.forEach((product, index) => {
-        const productDiv = document.createElement("div");
-        productDiv.classList.add("product");
-        productDiv.onclick = function() {
-          showModal(product.title, product.description, product.image);
-        };
-        productDiv.innerHTML = `
-          <img src="${product.image}" alt="${product.title}">
-          <h3>${product.title}</h3>
-        `;
-        container.appendChild(productDiv);
-      });
-    });
-  </script>
-</body>
-</html>
+        size: { 
