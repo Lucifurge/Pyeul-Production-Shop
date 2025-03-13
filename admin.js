@@ -11,34 +11,75 @@ document.addEventListener("DOMContentLoaded", () => {
   fontAwesome.href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css";
   document.head.appendChild(fontAwesome);
 
+  // Inject Custom Pinkish Theme
+  const customCSS = document.createElement("style");
+  customCSS.innerHTML = `
+    body { background-color: #fce4ec; color: #333; }
+    .navbar { background-color: #ff80ab !important; }
+    .navbar-brand, .nav-link { color: white !important; }
+    .sidebar { background-color: #ffb3c1; min-width: 250px; height: 100vh; }
+    .sidebar .nav-link { color: white; transition: 0.3s; }
+    .sidebar .nav-link:hover { background-color: #ff80ab; }
+    .card { background: white; border: none; }
+    .btn-primary { background-color: #ff4081; border: none; }
+    .btn-danger { background-color: #ff1744; border: none; }
+  `;
+  document.head.appendChild(customCSS);
+
   // Inject Admin Panel HTML
   document.body.innerHTML = `
-    <nav class="navbar navbar-dark bg-dark px-3">
+    <nav class="navbar navbar-dark px-3">
       <a class="navbar-brand" href="#">Admin Panel</a>
       <button class="btn btn-outline-light" id="toggleDarkMode"><i class="fas fa-moon"></i></button>
     </nav>
 
     <div class="d-flex">
-      <div class="bg-dark text-white p-3 vh-100" id="sidebar">
-        <h4 class="mb-3">Dashboard</h4>
+      <div class="sidebar p-3" id="sidebar">
+        <h4 class="mb-3 text-white">Dashboard</h4>
         <ul class="nav flex-column">
-          <li class="nav-item"><a href="#" class="nav-link text-white" id="navHome"><i class="fas fa-home"></i> Home</a></li>
-          <li class="nav-item"><a href="#" class="nav-link text-white" id="navAddProduct"><i class="fas fa-plus"></i> Add Product</a></li>
-          <li class="nav-item"><a href="#" class="nav-link text-white" id="navProducts"><i class="fas fa-box"></i> Products</a></li>
+          <li class="nav-item"><a href="#" class="nav-link" id="navHome"><i class="fas fa-home"></i> Home</a></li>
+          <li class="nav-item"><a href="#" class="nav-link" id="navAddProduct"><i class="fas fa-plus"></i> Add Product</a></li>
+          <li class="nav-item"><a href="#" class="nav-link" id="navProducts"><i class="fas fa-box"></i> Products</a></li>
         </ul>
       </div>
 
       <div class="container-fluid p-4" id="mainContent">
-        <h2>Welcome to the Admin Panel</h2>
-        <p>Use the sidebar to navigate.</p>
       </div>
     </div>
   `;
 
   const mainContent = document.getElementById("mainContent");
 
-  // Home Section
-  const homeSection = `<div class="alert alert-primary"><h2>Dashboard</h2><p>Welcome, Admin!</p></div>`;
+  // Home Section with Statistics
+  function loadHome() {
+    let products = JSON.parse(localStorage.getItem("products")) || [];
+    let totalProducts = products.length;
+    let totalSales = totalProducts * 15; // Mock sales value
+    let totalUsers = 25; // Mock users value
+
+    mainContent.innerHTML = `
+      <div class="row">
+        <div class="col-md-4">
+          <div class="card p-4 shadow">
+            <h4>Total Products</h4>
+            <p class="fs-3">${totalProducts}</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card p-4 shadow">
+            <h4>Total Sales</h4>
+            <p class="fs-3">$${totalSales}</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card p-4 shadow">
+            <h4>Total Users</h4>
+            <p class="fs-3">${totalUsers}</p>
+          </div>
+        </div>
+      </div>
+    `;
+  }
 
   // Add Product Section
   const addProductSection = `
@@ -67,26 +108,46 @@ document.addEventListener("DOMContentLoaded", () => {
   `;
 
   // Products Section
-  const productsSection = `
-    <div class="card shadow p-4">
-      <h2>Products</h2>
-      <div id="productsContainer" class="row"></div>
-    </div>
-  `;
+  function loadProducts() {
+    let products = JSON.parse(localStorage.getItem("products")) || [];
+    let productsContent = products.length === 0 ? "<p>No products available.</p>" : "";
 
-  // Load Home Page Initially
-  mainContent.innerHTML = homeSection;
+    products.forEach((product, index) => {
+      productsContent += `
+        <div class="col-md-4 mb-4">
+          <div class="card shadow-sm">
+            <img src="${product.image}" class="card-img-top" alt="Product">
+            <div class="card-body">
+              <h5 class="card-title">${product.title}</h5>
+              <p class="card-text">${product.description}</p>
+              <a href="${product.link}" target="_blank" class="btn btn-primary"><i class="fas fa-shopping-cart"></i> Buy</a>
+              <button class="btn btn-danger mt-2 w-100 delete-btn" data-index="${index}"><i class="fas fa-trash"></i> Delete</button>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    mainContent.innerHTML = `<div class="row">${productsContent}</div>`;
+
+    document.querySelectorAll(".delete-btn").forEach(button => {
+      button.addEventListener("click", function () {
+        let index = this.getAttribute("data-index");
+        products.splice(index, 1);
+        localStorage.setItem("products", JSON.stringify(products));
+        loadProducts();
+        loadHome(); // Refresh stats
+      });
+    });
+  }
 
   // Sidebar Navigation
-  document.getElementById("navHome").addEventListener("click", () => mainContent.innerHTML = homeSection);
+  document.getElementById("navHome").addEventListener("click", () => loadHome());
   document.getElementById("navAddProduct").addEventListener("click", () => {
     mainContent.innerHTML = addProductSection;
     attachFormListener();
   });
-  document.getElementById("navProducts").addEventListener("click", () => {
-    mainContent.innerHTML = productsSection;
-    displayProducts();
-  });
+  document.getElementById("navProducts").addEventListener("click", () => loadProducts());
 
   // Dark Mode Toggle
   document.getElementById("toggleDarkMode").addEventListener("click", () => {
@@ -95,65 +156,26 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("sidebar").classList.toggle("bg-secondary");
   });
 
-  // Product Storage
-  let products = JSON.parse(localStorage.getItem("products")) || [];
-
-  // Display Products
-  function displayProducts() {
-    const productsContainer = document.getElementById("productsContainer");
-    productsContainer.innerHTML = products.length === 0 ? "<p>No products available.</p>" : "";
-
-    products.forEach((product, index) => {
-      const div = document.createElement("div");
-      div.className = "col-md-4 mb-4";
-      div.innerHTML = `
-        <div class="card shadow-sm">
-          <img src="${product.image}" class="card-img-top" alt="Product">
-          <div class="card-body">
-            <h5 class="card-title">${product.title}</h5>
-            <p class="card-text">${product.description}</p>
-            <a href="${product.link}" target="_blank" class="btn btn-primary"><i class="fas fa-shopping-cart"></i> Buy</a>
-            <button class="btn btn-danger mt-2 w-100 delete-btn" data-index="${index}"><i class="fas fa-trash"></i> Delete</button>
-          </div>
-        </div>
-      `;
-      productsContainer.appendChild(div);
-    });
-
-    document.querySelectorAll(".delete-btn").forEach(button => {
-      button.addEventListener("click", function () {
-        const index = this.getAttribute("data-index");
-        products.splice(index, 1);
-        localStorage.setItem("products", JSON.stringify(products));
-        displayProducts();
-      });
-    });
-  }
-
   // Handle Form Submission
   function attachFormListener() {
-    const productForm = document.getElementById("productForm");
-    productForm.addEventListener("submit", function (e) {
+    document.getElementById("productForm").addEventListener("submit", function (e) {
       e.preventDefault();
+      let products = JSON.parse(localStorage.getItem("products")) || [];
+      let title = document.getElementById("productTitle").value.trim();
+      let description = document.getElementById("productDescription").value.trim();
+      let link = document.getElementById("productLink").value.trim();
+      let file = document.getElementById("productImage").files[0];
 
-      const title = document.getElementById("productTitle").value.trim();
-      const description = document.getElementById("productDescription").value.trim();
-      const link = document.getElementById("productLink").value.trim();
-      const file = document.getElementById("productImage").files[0];
-
-      if (!file) return alert("Please select an image!");
-
-      const reader = new FileReader();
+      let reader = new FileReader();
       reader.onload = function (event) {
-        const newProduct = { title, description, image: event.target.result, link };
-        products.push(newProduct);
+        products.push({ title, description, image: event.target.result, link });
         localStorage.setItem("products", JSON.stringify(products));
-        displayProducts();
-        productForm.reset();
+        loadProducts();
+        loadHome();
       };
       reader.readAsDataURL(file);
     });
   }
 
-  displayProducts();
+  loadHome();
 });
