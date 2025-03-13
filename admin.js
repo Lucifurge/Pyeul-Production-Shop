@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
   chartJS.src = "https://cdn.jsdelivr.net/npm/chart.js";
   document.head.appendChild(chartJS);
 
-  // Inject Custom CSS
+  // Custom Styles
   const customCSS = document.createElement("style");
   customCSS.innerHTML = `
     body { background-color: #faf3f3; color: #4a4a4a; }
@@ -25,12 +25,8 @@ document.addEventListener("DOMContentLoaded", () => {
     #sidebar { background: #fff5f7; color: #6d214f; box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1); }
     .nav-link { color: #4a4a4a !important; }
     .nav-link:hover { background-color: #ffccd5; color: white !important; }
-    .btn-primary { background: linear-gradient(45deg, #ff6b81, #d63384); border: none; color: white; }
-    .btn-danger { background: linear-gradient(45deg, #ff4d6d, #ff6b81); border: none; color: white; }
     .card { background: white; border: 1px solid #f8a5c2; box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1); }
-    .alert-primary { background-color: #ffdde1; color: #d63384; border-color: #f8a5c2; }
-    .history-item { background-color: #fff0f6; border-left: 5px solid #d63384; padding: 10px; margin-bottom: 8px; 
-                    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.05); }
+    .product-img { width: 100%; height: 150px; object-fit: cover; }
   `;
   document.head.appendChild(customCSS);
 
@@ -38,7 +34,6 @@ document.addEventListener("DOMContentLoaded", () => {
   document.body.innerHTML = `
     <nav class="navbar navbar-dark px-3">
       <a class="navbar-brand" href="#">Admin Panel</a>
-      <button class="btn btn-outline-light" id="toggleDarkMode"><i class="fas fa-moon"></i></button>
     </nav>
 
     <div class="d-flex">
@@ -46,7 +41,6 @@ document.addEventListener("DOMContentLoaded", () => {
         <h4 class="mb-3">Dashboard</h4>
         <ul class="nav flex-column">
           <li class="nav-item"><a href="#" class="nav-link" id="navHome"><i class="fas fa-home"></i> Home</a></li>
-          <li class="nav-item"><a href="#" class="nav-link" id="navAddProduct"><i class="fas fa-plus"></i> Add Product</a></li>
           <li class="nav-item"><a href="#" class="nav-link" id="navProducts"><i class="fas fa-box"></i> Products</a></li>
           <li class="nav-item"><a href="#" class="nav-link" id="navHistory"><i class="fas fa-history"></i> History</a></li>
         </ul>
@@ -61,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const mainContent = document.getElementById("mainContent");
 
-  // Home Section (Dashboard with Chart)
+  // Home Section
   const homeSection = `
     <div class="alert alert-primary">
       <h2>Dashboard</h2>
@@ -74,21 +68,30 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
   `;
 
-  // Add Product Section
-  const addProductSection = `
+  // Products Section with Add Product Form (With Image)
+  const productsSection = `
     <div class="card shadow p-4">
-      <h2>Add Product</h2>
-      <form id="productForm">
-        <div class="mb-3"><label class="form-label">Title</label><input type="text" id="productTitle" class="form-control" required></div>
-        <div class="mb-3"><label class="form-label">Description</label><textarea id="productDescription" class="form-control" required></textarea></div>
-        <div class="mb-3"><label class="form-label">Facebook Link</label><input type="text" id="productLink" class="form-control" required></div>
-        <button type="submit" class="btn btn-primary w-100">Add Product</button>
+      <h2>Products</h2>
+      
+      <form id="addProductForm" class="mb-4">
+        <div class="mb-3">
+          <label for="productTitle" class="form-label">Product Title</label>
+          <input type="text" class="form-control" id="productTitle" required>
+        </div>
+        <div class="mb-3">
+          <label for="productLink" class="form-label">Product Link</label>
+          <input type="url" class="form-control" id="productLink" required>
+        </div>
+        <div class="mb-3">
+          <label for="productImage" class="form-label">Product Image URL</label>
+          <input type="url" class="form-control" id="productImage" required>
+        </div>
+        <button type="submit" class="btn btn-success">Add Product</button>
       </form>
+
+      <div id="productsContainer" class="row"></div>
     </div>
   `;
-
-  // Products Section
-  const productsSection = `<div class="card shadow p-4"><h2>Products</h2><div id="productsContainer" class="row"></div></div>`;
 
   // History Section
   const historySection = `<div class="card shadow p-4"><h2>History</h2><div id="historyContainer"></div></div>`;
@@ -101,14 +104,10 @@ document.addEventListener("DOMContentLoaded", () => {
     displayProductChart();
   });
 
-  document.getElementById("navAddProduct").addEventListener("click", () => {
-    mainContent.innerHTML = addProductSection;
-    attachFormListener();
-  });
-
   document.getElementById("navProducts").addEventListener("click", () => {
     mainContent.innerHTML = productsSection;
     displayProducts();
+    document.getElementById("addProductForm").addEventListener("submit", addProduct);
   });
 
   document.getElementById("navHistory").addEventListener("click", () => {
@@ -151,6 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
       div.className = "col-md-4 mb-4";
       div.innerHTML = `
         <div class="card shadow-sm">
+          <img src="${product.image}" class="product-img card-img-top" alt="Product Image">
           <div class="card-body">
             <h5 class="card-title">${product.title}</h5>
             <a href="${product.link}" target="_blank" class="btn btn-primary">View</a>
@@ -160,5 +160,32 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
       productsContainer.appendChild(div);
     });
+
+    document.querySelectorAll(".delete-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const index = e.target.getAttribute("data-index");
+        const deletedProduct = products.splice(index, 1)[0];
+        history.push(`Deleted product: ${deletedProduct.title}`);
+        localStorage.setItem("products", JSON.stringify(products));
+        localStorage.setItem("history", JSON.stringify(history));
+        displayProducts();
+      });
+    });
+  }
+
+  function addProduct(e) {
+    e.preventDefault();
+    const title = document.getElementById("productTitle").value;
+    const link = document.getElementById("productLink").value;
+    const image = document.getElementById("productImage").value;
+
+    products.push({ title, link, image });
+    localStorage.setItem("products", JSON.stringify(products));
+    displayProducts();
+    document.getElementById("addProductForm").reset();
+  }
+
+  function displayHistory() {
+    document.getElementById("historyContainer").innerHTML = history.map(event => `<p>${event}</p>`).join("");
   }
 });
