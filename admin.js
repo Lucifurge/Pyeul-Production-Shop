@@ -11,25 +11,72 @@ document.addEventListener("DOMContentLoaded", () => {
   fontAwesome.href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css";
   document.head.appendChild(fontAwesome);
 
-  // Inject Chart.js
-  const chartJS = document.createElement("script");
-  chartJS.src = "https://cdn.jsdelivr.net/npm/chart.js";
-  document.head.appendChild(chartJS);
+  // Apply pink theme styles
+  const style = document.createElement("style");
+  style.innerHTML = `
+    body {
+      background-color: #ffe4e6;
+      color: #880e4f;
+    }
+    .navbar {
+      background-color: #d63384 !important;
+    }
+    .navbar a {
+      color: white !important;
+    }
+    #sidebar {
+      background-color: #ffccd5;
+      color: #6d214f;
+    }
+    .nav-link {
+      color: #880e4f !important;
+    }
+    .nav-link:hover {
+      background-color: #f8a5c2;
+      color: white !important;
+    }
+    .btn-primary {
+      background: linear-gradient(45deg, #d63384, #ff69b4);
+      border: none;
+    }
+    .btn-danger {
+      background: linear-gradient(45deg, #ff4d6d, #ff6b81);
+      border: none;
+    }
+    .btn-outline-light {
+      color: white;
+      border-color: white;
+    }
+    .btn-outline-light:hover {
+      background-color: white;
+      color: #d63384;
+    }
+    .card {
+      background: white;
+      border: 1px solid #f8a5c2;
+    }
+    .alert-primary {
+      background-color: #ffdde1;
+      color: #d63384;
+      border-color: #f8a5c2;
+    }
+  `;
+  document.head.appendChild(style);
 
   // Inject Admin Panel HTML
   document.body.innerHTML = `
-    <nav class="navbar navbar-dark bg-dark px-3">
+    <nav class="navbar px-3">
       <a class="navbar-brand" href="#">Admin Panel</a>
       <button class="btn btn-outline-light" id="toggleDarkMode"><i class="fas fa-moon"></i></button>
     </nav>
 
     <div class="d-flex">
-      <div class="bg-dark text-white p-3 vh-100" id="sidebar">
+      <div class="p-3 vh-100" id="sidebar">
         <h4 class="mb-3">Dashboard</h4>
         <ul class="nav flex-column">
-          <li class="nav-item"><a href="#" class="nav-link text-white" id="navHome"><i class="fas fa-home"></i> Home</a></li>
-          <li class="nav-item"><a href="#" class="nav-link text-white" id="navAddProduct"><i class="fas fa-plus"></i> Add Product</a></li>
-          <li class="nav-item"><a href="#" class="nav-link text-white" id="navProducts"><i class="fas fa-box"></i> Products</a></li>
+          <li class="nav-item"><a href="#" class="nav-link" id="navHome"><i class="fas fa-home"></i> Home</a></li>
+          <li class="nav-item"><a href="#" class="nav-link" id="navAddProduct"><i class="fas fa-plus"></i> Add Product</a></li>
+          <li class="nav-item"><a href="#" class="nav-link" id="navProducts"><i class="fas fa-box"></i> Products</a></li>
         </ul>
       </div>
 
@@ -42,14 +89,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const mainContent = document.getElementById("mainContent");
 
-  // Home Section (Dashboard with Chart)
-  const homeSection = `
-    <div class="card shadow p-4">
-      <h2>Dashboard</h2>
-      <p>Welcome, Admin!</p>
-      <canvas id="productChart" width="400" height="200"></canvas>
-    </div>
-  `;
+  // Home Section
+  const homeSection = `<div class="alert alert-primary"><h2>Dashboard</h2><p>Welcome, Admin!</p></div>`;
 
   // Add Product Section
   const addProductSection = `
@@ -87,13 +128,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Load Home Page Initially
   mainContent.innerHTML = homeSection;
-  setTimeout(updateChart, 500); // Wait for Chart.js to load before initializing the chart
 
   // Sidebar Navigation
-  document.getElementById("navHome").addEventListener("click", () => {
-    mainContent.innerHTML = homeSection;
-    setTimeout(updateChart, 500);
-  });
+  document.getElementById("navHome").addEventListener("click", () => mainContent.innerHTML = homeSection);
   document.getElementById("navAddProduct").addEventListener("click", () => {
     mainContent.innerHTML = addProductSection;
     attachFormListener();
@@ -128,7 +165,6 @@ document.addEventListener("DOMContentLoaded", () => {
             <h5 class="card-title">${product.title}</h5>
             <p class="card-text">${product.description}</p>
             <a href="${product.link}" target="_blank" class="btn btn-primary"><i class="fas fa-shopping-cart"></i> Buy</a>
-            <button class="btn btn-warning mt-2 w-100 edit-btn" data-index="${index}"><i class="fas fa-edit"></i> Edit</button>
             <button class="btn btn-danger mt-2 w-100 delete-btn" data-index="${index}"><i class="fas fa-trash"></i> Delete</button>
           </div>
         </div>
@@ -142,14 +178,6 @@ document.addEventListener("DOMContentLoaded", () => {
         products.splice(index, 1);
         localStorage.setItem("products", JSON.stringify(products));
         displayProducts();
-        updateChart();
-      });
-    });
-
-    document.querySelectorAll(".edit-btn").forEach(button => {
-      button.addEventListener("click", function () {
-        const index = this.getAttribute("data-index");
-        editProduct(index);
       });
     });
   }
@@ -173,30 +201,9 @@ document.addEventListener("DOMContentLoaded", () => {
         products.push(newProduct);
         localStorage.setItem("products", JSON.stringify(products));
         displayProducts();
-        updateChart();
         productForm.reset();
       };
       reader.readAsDataURL(file);
-    });
-  }
-
-  // Edit Product
-  function editProduct(index) {
-    const product = products[index];
-    document.getElementById("productTitle").value = product.title;
-    document.getElementById("productDescription").value = product.description;
-    document.getElementById("productLink").value = product.link;
-  }
-
-  // Update Chart
-  function updateChart() {
-    const ctx = document.getElementById("productChart").getContext("2d");
-    new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: ["Total Products"],
-        datasets: [{ label: "Products", data: [products.length], backgroundColor: "blue" }]
-      }
     });
   }
 
