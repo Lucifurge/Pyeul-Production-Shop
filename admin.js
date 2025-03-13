@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
   chartScript.src = "https://cdn.jsdelivr.net/npm/chart.js";
   document.head.appendChild(chartScript);
 
-  // Custom GitHub-like Theme with Gold Accents
+  // Custom AQW-like Dark Theme with Gold Accents
   const customCSS = document.createElement("style");
   customCSS.innerHTML = `
     body { background-color: #0d1117; color: #c9d1d9; font-family: 'Arial', sans-serif; }
@@ -37,7 +37,6 @@ document.addEventListener("DOMContentLoaded", () => {
   document.body.innerHTML = `
     <nav class="navbar navbar-dark px-3">
       <a class="navbar-brand" href="#"><i class="fas fa-cog gold-text"></i> Admin Panel</a>
-      <button class="btn btn-outline-light" id="toggleDarkMode"><i class="fas fa-moon"></i></button>
     </nav>
 
     <div class="d-flex">
@@ -121,6 +120,10 @@ document.addEventListener("DOMContentLoaded", () => {
             <label class="form-label">Product Image</label>
             <input type="file" id="productImage" class="form-control" accept="image/*" required>
           </div>
+          <div class="mb-3">
+            <label class="form-label">Facebook Link</label>
+            <input type="text" id="productLink" class="form-control" required>
+          </div>
           <button type="submit" class="btn btn-primary w-100">Add Product</button>
         </form>
       </div>
@@ -132,17 +135,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const title = document.getElementById("productTitle").value;
       const description = document.getElementById("productDescription").value;
       const imageFile = document.getElementById("productImage").files[0];
+      const link = document.getElementById("productLink").value;
 
       if (!imageFile) return;
 
       const reader = new FileReader();
       reader.readAsDataURL(imageFile);
       reader.onload = function () {
-        const newProduct = {
-          title,
-          description,
-          image: reader.result,
-        };
+        const newProduct = { title, description, image: reader.result, link };
 
         let products = JSON.parse(localStorage.getItem("products")) || [];
         products.push(newProduct);
@@ -167,6 +167,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <div class="card-body">
               <h5 class="card-title">${product.title}</h5>
               <p class="card-text">${product.description}</p>
+              <a href="${product.link}" class="btn btn-primary w-100" target="_blank">View on Facebook</a>
               <button class="btn btn-danger mt-2 w-100 delete-btn" data-index="${index}"><i class="fas fa-trash"></i> Delete</button>
             </div>
           </div>
@@ -175,16 +176,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     mainContent.innerHTML = `<div class="row">${productsContent}</div>`;
-
-    document.querySelectorAll(".delete-btn").forEach(button => {
-      button.addEventListener("click", function () {
-        let index = this.getAttribute("data-index");
-        products.splice(index, 1);
-        localStorage.setItem("products", JSON.stringify(products));
-        loadProducts();
-        loadHome();
-      });
-    });
   }
 
   document.getElementById("navHome").addEventListener("click", loadHome);
