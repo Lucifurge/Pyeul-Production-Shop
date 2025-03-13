@@ -11,6 +11,11 @@ document.addEventListener("DOMContentLoaded", () => {
   fontAwesome.href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css";
   document.head.appendChild(fontAwesome);
 
+  // Inject Chart.js for statistics
+  const chartScript = document.createElement("script");
+  chartScript.src = "https://cdn.jsdelivr.net/npm/chart.js";
+  document.head.appendChild(chartScript);
+
   // Inject Custom CSS
   const customCSS = document.createElement("style");
   customCSS.innerHTML = `
@@ -23,9 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
     .btn-primary { background: linear-gradient(45deg, #ff6b81, #d63384); border: none; color: white; }
     .btn-danger { background: linear-gradient(45deg, #ff4d6d, #ff6b81); border: none; color: white; }
     .card { background: white; border: 1px solid #f8a5c2; box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1); }
-    .alert-primary { background-color: #ffdde1; color: #d63384; border-color: #f8a5c2; }
-    .history-item { background-color: #fff0f6; border-left: 5px solid #d63384; padding: 10px; margin-bottom: 8px; 
-                    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.05); }
+    .chart-container { width: 100%; max-width: 600px; margin: auto; }
   `;
   document.head.appendChild(customCSS);
 
@@ -56,8 +59,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const mainContent = document.getElementById("mainContent");
 
-  // Home Section
-  const homeSection = `<div class="alert alert-primary"><h2>Dashboard</h2><p>Welcome, Admin!</p></div>`;
+  // Home Section with Chart
+  const homeSection = `
+    <div class="alert alert-primary">
+      <h2>Dashboard</h2>
+      <p>Welcome, Admin!</p>
+    </div>
+    <div class="chart-container">
+      <canvas id="productChart"></canvas>
+    </div>
+  `;
 
   // Add Product Section
   const addProductSection = `
@@ -81,7 +92,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   mainContent.innerHTML = homeSection;
 
-  document.getElementById("navHome").addEventListener("click", () => mainContent.innerHTML = homeSection);
+  document.getElementById("navHome").addEventListener("click", () => {
+    mainContent.innerHTML = homeSection;
+    updateChart();
+  });
   document.getElementById("navAddProduct").addEventListener("click", () => {
     mainContent.innerHTML = addProductSection;
     attachFormListener();
@@ -142,6 +156,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const title = document.getElementById("productTitle").value.trim();
       history.push(`Added: ${title}`);
       saveData();
+      updateChart();
     });
   }
 
@@ -150,7 +165,12 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem("history", JSON.stringify(history));
   }
 
-  function displayHistory() {
-    document.getElementById("historyContainer").innerHTML = history.map(h => `<div class="history-item">${h}</div>`).join("");
+  function updateChart() {
+    setTimeout(() => {
+      new Chart(document.getElementById("productChart"), {
+        type: "bar",
+        data: { labels: ["Total Products"], datasets: [{ label: "Products", data: [products.length], backgroundColor: "#ff6b81" }] }
+      });
+    }, 500);
   }
 });
