@@ -39,4 +39,130 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   `;
   document.head.appendChild(style);
+
+  // Create Admin Panel Layout
+  document.body.innerHTML = `
+    <div class="topnav">
+      <span class="toggle-btn" id="toggleSidebar">☰</span>
+      <a href="index.html">Visit Website</a>
+      <button id="toggleDarkMode">🌙</button>
+    </div>
+    <div class="sidebar" id="sidebar">
+      <a href="#" id="navHome">Home</a>
+      <a href="#" id="navAddProduct">Add Product</a>
+      <a href="#" id="navProducts">Products</a>
+    </div>
+    <div class="main-content" id="mainContent"></div>
+  `;
+
+  const mainContent = document.getElementById("mainContent");
+
+  // Home Section
+  const homeSection = `<div class="home-section"><h2>Welcome to the Admin Panel</h2><p>Use the sidebar to navigate.</p></div>`;
+
+  // Add Product Section
+  const addProductSection = `
+    <div class="form-section">
+      <h2>Add Product</h2>
+      <form id="productForm">
+        <input type="text" id="productTitle" placeholder="Product Title" required>
+        <textarea id="productDescription" placeholder="Product Description" required></textarea>
+        <input type="file" id="productImage" accept="image/*" required>
+        <input type="text" id="productLink" placeholder="Facebook Link" required>
+        <button type="submit">Add Product</button>
+      </form>
+    </div>
+  `;
+
+  // Products Section
+  const productsSection = `
+    <div class="products-section">
+      <h2>Products</h2>
+      <div id="productsContainer"></div>
+    </div>
+  `;
+
+  // Load Home Page Initially
+  mainContent.innerHTML = homeSection;
+
+  // Handle Sidebar Navigation
+  document.getElementById("navHome").addEventListener("click", () => mainContent.innerHTML = homeSection);
+  document.getElementById("navAddProduct").addEventListener("click", () => {
+    mainContent.innerHTML = addProductSection;
+    attachFormListener();
+  });
+  document.getElementById("navProducts").addEventListener("click", () => {
+    mainContent.innerHTML = productsSection;
+    displayProducts();
+  });
+
+  // Sidebar Toggle
+  document.getElementById("toggleSidebar").addEventListener("click", () => {
+    const sidebar = document.getElementById("sidebar");
+    const mainContent = document.querySelector(".main-content");
+
+    sidebar.classList.toggle("hide");
+    mainContent.classList.toggle("full-width");
+  });
+
+  // Dark Mode Toggle
+  document.getElementById("toggleDarkMode").addEventListener("click", () => {
+    document.body.classList.toggle("dark-mode");
+
+    // Toggle dark mode for form and products sections
+    document.querySelectorAll('.form-section, .products-section').forEach(section => {
+      section.classList.toggle('dark-mode');
+    });
+  });
+
+  // Retrieve Stored Products
+  let products = JSON.parse(localStorage.getItem("products")) || [];
+
+  // Display Products
+  function displayProducts() {
+    const productsContainer = document.getElementById("productsContainer");
+    productsContainer.innerHTML = products.length === 0 ? "<p>No products available.</p>" : "";
+
+    products.forEach((product, index) => {
+      const div = document.createElement("div");
+      div.className = "product-item";
+      div.innerHTML = `
+        <img src="${product.image}" alt="Product Image">
+        <div class="product-info">
+          <h3>${product.title}</h3>
+          <p>${product.description}</p>
+          <a href="${product.link}" target="_blank"><button>Buy</button></a>
+        </div>
+        <button class="delete-btn" data-index="${index}">Delete</button>
+      `;
+      productsContainer.appendChild(div);
+    });
+  }
+
+  // Handle Form Submission
+  function attachFormListener() {
+    const productForm = document.getElementById("productForm");
+    productForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const title = document.getElementById("productTitle").value.trim();
+      const description = document.getElementById("productDescription").value.trim();
+      const link = document.getElementById("productLink").value.trim();
+      const file = document.getElementById("productImage").files[0];
+
+      if (!file) return alert("Please select an image!");
+
+      const reader = new FileReader();
+      reader.onload = function (event) {
+        const newProduct = { title, description, image: event.target.result, link };
+        products.push(newProduct);
+        localStorage.setItem("products", JSON.stringify(products));
+        displayProducts();
+        productForm.reset();
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  displayProducts();
 });
