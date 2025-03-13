@@ -1,8 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
-
 const supabaseUrl = 'https://ehrwsusgkzerozjnddib.supabase.co';
-const supabaseKey = process.env.SUPABASE_KEY;
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVocndzdXNna3plcm96am5kZGliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY0Nzk4OTgsImV4cCI6MjA1MjA1NTg5OH0.2gC_pxtLhwrAGA2wR6jvXKuIhNMe_L_IsMWgSa3KKds';
 const supabase = createClient(supabaseUrl, supabaseKey);
+export default supabase;
+
 
 document.addEventListener("DOMContentLoaded", async () => {
   // Inject Bootstrap 5 and FontAwesome for styling
