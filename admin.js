@@ -60,6 +60,12 @@ document.addEventListener("DOMContentLoaded", () => {
       color: #d63384;
       border-color: #f8a5c2;
     }
+    .history-item {
+      background-color: #fff0f6;
+      border-left: 5px solid #d63384;
+      padding: 10px;
+      margin-bottom: 8px;
+    }
   `;
   document.head.appendChild(style);
 
@@ -77,6 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
           <li class="nav-item"><a href="#" class="nav-link" id="navHome"><i class="fas fa-home"></i> Home</a></li>
           <li class="nav-item"><a href="#" class="nav-link" id="navAddProduct"><i class="fas fa-plus"></i> Add Product</a></li>
           <li class="nav-item"><a href="#" class="nav-link" id="navProducts"><i class="fas fa-box"></i> Products</a></li>
+          <li class="nav-item"><a href="#" class="nav-link" id="navHistory"><i class="fas fa-history"></i> History</a></li>
         </ul>
       </div>
 
@@ -89,10 +96,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const mainContent = document.getElementById("mainContent");
 
-  // Home Section
+  // Sections
   const homeSection = `<div class="alert alert-primary"><h2>Dashboard</h2><p>Welcome, Admin!</p></div>`;
 
-  // Add Product Section
   const addProductSection = `
     <div class="card shadow p-4">
       <h2>Add Product</h2>
@@ -118,7 +124,6 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
   `;
 
-  // Products Section
   const productsSection = `
     <div class="card shadow p-4">
       <h2>Products</h2>
@@ -126,10 +131,15 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
   `;
 
-  // Load Home Page Initially
+  const historySection = `
+    <div class="card shadow p-4">
+      <h2>History</h2>
+      <div id="historyContainer"></div>
+    </div>
+  `;
+
   mainContent.innerHTML = homeSection;
 
-  // Sidebar Navigation
   document.getElementById("navHome").addEventListener("click", () => mainContent.innerHTML = homeSection);
   document.getElementById("navAddProduct").addEventListener("click", () => {
     mainContent.innerHTML = addProductSection;
@@ -139,18 +149,14 @@ document.addEventListener("DOMContentLoaded", () => {
     mainContent.innerHTML = productsSection;
     displayProducts();
   });
-
-  // Dark Mode Toggle
-  document.getElementById("toggleDarkMode").addEventListener("click", () => {
-    document.body.classList.toggle("bg-dark");
-    document.body.classList.toggle("text-white");
-    document.getElementById("sidebar").classList.toggle("bg-secondary");
+  document.getElementById("navHistory").addEventListener("click", () => {
+    mainContent.innerHTML = historySection;
+    displayHistory();
   });
 
-  // Product Storage
   let products = JSON.parse(localStorage.getItem("products")) || [];
+  let history = JSON.parse(localStorage.getItem("history")) || [];
 
-  // Display Products
   function displayProducts() {
     const productsContainer = document.getElementById("productsContainer");
     productsContainer.innerHTML = products.length === 0 ? "<p>No products available.</p>" : "";
@@ -175,6 +181,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".delete-btn").forEach(button => {
       button.addEventListener("click", function () {
         const index = this.getAttribute("data-index");
+        history.push(`❌ Deleted: ${products[index].title}`);
+        localStorage.setItem("history", JSON.stringify(history));
         products.splice(index, 1);
         localStorage.setItem("products", JSON.stringify(products));
         displayProducts();
@@ -182,29 +190,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Handle Form Submission
   function attachFormListener() {
-    const productForm = document.getElementById("productForm");
-    productForm.addEventListener("submit", function (e) {
+    document.getElementById("productForm").addEventListener("submit", function (e) {
       e.preventDefault();
-
-      const title = document.getElementById("productTitle").value.trim();
-      const description = document.getElementById("productDescription").value.trim();
-      const link = document.getElementById("productLink").value.trim();
-      const file = document.getElementById("productImage").files[0];
-
-      if (!file) return alert("Please select an image!");
-
-      const reader = new FileReader();
-      reader.onload = function (event) {
-        const newProduct = { title, description, image: event.target.result, link };
-        products.push(newProduct);
-        localStorage.setItem("products", JSON.stringify(products));
-        displayProducts();
-        productForm.reset();
-      };
-      reader.readAsDataURL(file);
+      history.push(`✅ Added: ${document.getElementById("productTitle").value}`);
+      localStorage.setItem("history", JSON.stringify(history));
     });
+  }
+
+  function displayHistory() {
+    document.getElementById("historyContainer").innerHTML = history.map(item => `<div class="history-item">${item}</div>`).join("");
   }
 
   displayProducts();
