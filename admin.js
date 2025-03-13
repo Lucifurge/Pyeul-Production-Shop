@@ -104,26 +104,55 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Add Product Section
-  const addProductSection = `
-    <div class="card shadow p-4">
-      <h2 class="gold-text">Add Product</h2>
-      <form id="productForm">
-        <div class="mb-3">
-          <label class="form-label">Product Title</label>
-          <input type="text" id="productTitle" class="form-control" required>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Product Description</label>
-          <textarea id="productDescription" class="form-control" required></textarea>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Product Image</label>
-          <input type="file" id="productImage" class="form-control" accept="image/*" required>
-        </div>
-        <button type="submit" class="btn btn-primary w-100">Add Product</button>
-      </form>
-    </div>
-  `;
+  function loadAddProduct() {
+    mainContent.innerHTML = `
+      <div class="card shadow p-4">
+        <h2 class="gold-text">Add Product</h2>
+        <form id="productForm">
+          <div class="mb-3">
+            <label class="form-label">Product Title</label>
+            <input type="text" id="productTitle" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Product Description</label>
+            <textarea id="productDescription" class="form-control" required></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Product Image</label>
+            <input type="file" id="productImage" class="form-control" accept="image/*" required>
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Add Product</button>
+        </form>
+      </div>
+    `;
+
+    document.getElementById("productForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const title = document.getElementById("productTitle").value;
+      const description = document.getElementById("productDescription").value;
+      const imageFile = document.getElementById("productImage").files[0];
+
+      if (!imageFile) return;
+
+      const reader = new FileReader();
+      reader.readAsDataURL(imageFile);
+      reader.onload = function () {
+        const newProduct = {
+          title,
+          description,
+          image: reader.result,
+        };
+
+        let products = JSON.parse(localStorage.getItem("products")) || [];
+        products.push(newProduct);
+        localStorage.setItem("products", JSON.stringify(products));
+
+        loadProducts();
+        loadHome();
+      };
+    });
+  }
 
   // Products Section
   function loadProducts() {
@@ -159,9 +188,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.getElementById("navHome").addEventListener("click", loadHome);
-  document.getElementById("navAddProduct").addEventListener("click", () => {
-    mainContent.innerHTML = addProductSection;
-  });
+  document.getElementById("navAddProduct").addEventListener("click", loadAddProduct);
   document.getElementById("navProducts").addEventListener("click", loadProducts);
 
   loadHome();
