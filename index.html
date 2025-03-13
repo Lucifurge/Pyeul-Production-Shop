@@ -144,6 +144,7 @@
         <h2 id="modal-title"></h2>
         <p id="modal-description"></p>
         <img id="modal-image" src="" alt="Product Image">
+        <a href="#" id="modal-buy-btn" class="buy-btn" target="_blank">Buy Now!</a>
       </div>
     </div>
   </div>
@@ -169,16 +170,26 @@
       }
     });
 
-    function showModal(title, description, image) {
+    function showModal(title, description, image, buyLink) {
       document.getElementById('modal-title').innerText = title;
       document.getElementById('modal-description').innerText = description;
       const modalImage = document.getElementById('modal-image');
+      const buyBtn = document.getElementById('modal-buy-btn');
+
       if (image) {
         modalImage.src = image;
         modalImage.style.display = "block";
       } else {
         modalImage.style.display = "none";
       }
+
+      if (buyLink) {
+        buyBtn.href = buyLink;
+        buyBtn.style.display = "inline-block";
+      } else {
+        buyBtn.style.display = "none";
+      }
+
       document.getElementById('product-modal').style.display = 'flex';
     }
 
@@ -204,7 +215,7 @@
             ${product.fbLink ? `<a href="${product.fbLink}" target="_blank" class="buy-btn">Buy Now!</a>` : ""}
           `;
           productDiv.onclick = function() {
-            showModal(product.title, product.description, product.image);
+            showModal(product.title, product.description, product.image, product.fbLink);
           };
           container.appendChild(productDiv);
         }
