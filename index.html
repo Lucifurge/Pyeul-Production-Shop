@@ -160,7 +160,6 @@
       }
     });
   
-    // Function to show the product modal
     function showModal(title, description, image) {
       document.getElementById('modal-title').innerText = title;
       document.getElementById('modal-description').innerText = description;
@@ -178,22 +177,25 @@
       document.getElementById('product-modal').style.display = 'none';
     }
   
-    // Dynamically load products from localStorage
     document.addEventListener("DOMContentLoaded", function() {
       let products = JSON.parse(localStorage.getItem("products")) || [];
       const container = document.getElementById("productsContainer");
+      const uniqueTitles = new Set();
       container.innerHTML = "";
       products.forEach((product) => {
-        const productDiv = document.createElement("div");
-        productDiv.classList.add("product");
-        productDiv.onclick = function() {
-          showModal(product.title, product.description, product.image);
-        };
-        productDiv.innerHTML = `
-          <img src="${product.image}" alt="${product.title}">
-          <h3>${product.title}</h3>
-        `;
-        container.appendChild(productDiv);
+        if (!uniqueTitles.has(product.title)) {
+          uniqueTitles.add(product.title);
+          const productDiv = document.createElement("div");
+          productDiv.classList.add("product");
+          productDiv.onclick = function() {
+            showModal(product.title, product.description, product.image);
+          };
+          productDiv.innerHTML = `
+            <img src="${product.image}" alt="${product.title}">
+            <h3>${product.title}</h3>
+          `;
+          container.appendChild(productDiv);
+        }
       });
     });
   </script>
