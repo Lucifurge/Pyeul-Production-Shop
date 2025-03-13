@@ -17,15 +17,18 @@ document.addEventListener("DOMContentLoaded", async () => {
   fontAwesome.href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css";
   document.head.appendChild(fontAwesome);
 
-  // Inject Pinkish Theme
+  // Inject Custom Pinkish Theme
   const customCSS = document.createElement("style");
   customCSS.innerHTML = `
     body { background-color: #fce4ec; color: #333; }
     .navbar { background-color: #ff80ab !important; }
+    .navbar-brand, .nav-link { color: white !important; }
     .sidebar { background-color: #ffb3c1; min-width: 250px; height: 100vh; }
+    .sidebar .nav-link { color: white; transition: 0.3s; }
+    .sidebar .nav-link:hover { background-color: #ff80ab; }
     .card { background: white; border: none; }
-    .btn-primary { background-color: #ff4081; }
-    .btn-danger { background-color: #ff1744; }
+    .btn-primary { background-color: #ff4081; border: none; }
+    .btn-danger { background-color: #ff1744; border: none; }
   `;
   document.head.appendChild(customCSS);
 
@@ -37,7 +40,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     </nav>
 
     <div class="d-flex">
-      <div class="sidebar p-3">
+      <div class="sidebar p-3" id="sidebar">
         <h4 class="mb-3 text-white">Dashboard</h4>
         <ul class="nav flex-column">
           <li class="nav-item"><a href="#" class="nav-link" id="navHome"><i class="fas fa-home"></i> Home</a></li>
@@ -46,7 +49,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         </ul>
       </div>
 
-      <div class="container-fluid p-4" id="mainContent"></div>
+      <div class="container-fluid p-4" id="mainContent">
+      </div>
     </div>
   `;
 
@@ -87,7 +91,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     `;
   }
 
-  // Add Product Form
+  // Add Product Section
   const addProductSection = `
     <div class="card shadow p-4">
       <h2>Add Product</h2>
@@ -178,5 +182,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
   document.getElementById("navProducts").addEventListener("click", () => loadProducts());
 
+  // Dark Mode Toggle
+  document.getElementById("toggleDarkMode").addEventListener("click", () => {
+    document.body.classList.toggle("bg-dark");
+    document.body.classList.toggle("text-white");
+    document.getElementById("sidebar").classList.toggle("bg-secondary");
+  });
+
   loadHome();
-});
