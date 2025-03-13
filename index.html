@@ -1,177 +1,174 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pyeul Production Shop</title>
-  <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
-  <style>
+document.addEventListener("DOMContentLoaded", () => {
+  // Inject CSS for the admin panel
+  const style = document.createElement("style");
+  style.innerHTML = `
     body {
+      background-color: #f4f4f4;
       font-family: Arial, sans-serif;
-      font-weight: bold;
       margin: 0;
-      background-color: #000;
-    }
-    #particles-js {
-      position: fixed;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-      top: 0;
-      left: 0;
-    }
-    .title-container {
-      text-align: center;
-      margin-top: 20px;
       padding: 20px;
-      background: rgba(0, 0, 0, 0.7);
-      border: 2px solid #ff69b4;
-      border-radius: 12px;
-      color: #fff;
-      width: 70%;
-      max-width: 400px;
-      margin-left: auto;
-      margin-right: auto;
-      box-shadow: 0 4px 15px rgba(255, 105, 180, 0.3);
     }
     .container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      justify-content: center;
-      margin-top: 50px;
-    }
-    .product {
-      border: 2px solid #ff69b4;
+      max-width: 800px;
+      margin: 20px auto;
+      background: #fff;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
       border-radius: 8px;
-      padding: 15px;
-      background-color: black;
-      opacity: 0.8;
-      width: 300px;
+    }
+    h1 {
       text-align: center;
-      box-shadow: 2px 2px 8px rgba(255, 105, 180, 0.3);
+      color: #333;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+    input, textarea {
+      margin: 10px 0;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    input[type="file"] {
+      padding: 3px;
+    }
+    button {
+      padding: 10px;
+      background-color: #ff69b4;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
       cursor: pointer;
+      margin-top: 10px;
+      font-size: 16px;
     }
-    .product h3, .product p {
-      color: #ff69b4;
+    button:hover {
+      background-color: #ff1493;
     }
-    .footer {
-      text-align: center;
-      color: #ff69b4;
-      margin-top: 50px;
+    .product-list {
+      margin-top: 20px;
+    }
+    .product-list h2 {
+      margin-bottom: 10px;
+      color: #555;
+    }
+    .product-item {
+      border-bottom: 1px solid #ddd;
       padding: 10px 0;
-      border-top: 2px solid #ff69b4;
-      background: rgba(0, 0, 0, 0.9);
-    }
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0, 0, 0, 0.8);
-      justify-content: center;
+      display: flex;
       align-items: center;
     }
-    .modal-content {
-      background: black;
-      padding: 20px;
-      border: 2px solid #ff69b4;
+    .product-item img {
+      max-width: 100px;
+      max-height: 100px;
+      margin-right: 20px;
+      border-radius: 4px;
+      object-fit: cover;
+    }
+    .product-info {
+      flex-grow: 1;
+    }
+    .product-info h3 {
+      margin: 0;
+      color: #333;
+    }
+    .product-info p {
+      margin: 5px 0 0;
+      color: #666;
+    }
+    .delete-btn {
+      background: #d9534f;
+      border: none;
       color: #fff;
-      width: 50%;
-      text-align: center;
-      border-radius: 8px;
-    }
-    .close {
-      color: #ff69b4;
-      font-size: 24px;
+      padding: 5px 10px;
+      border-radius: 4px;
       cursor: pointer;
+      font-size: 14px;
     }
-    /* Optional: Style for modal images */
-    #modal-image {
-      max-width: 100%;
-      margin-top: 10px;
-      display: none;
+    .delete-btn:hover {
+      background: #c9302c;
     }
-  </style>
-</head>
-<body>
-  <div id="particles-js"></div> 
+  `;
+  document.head.appendChild(style);
 
-  <div class="title-container">
-    <h1>ıllı Pyeul Productions Shop</h1>
-  </div>
-
-  <!-- Container where products will be dynamically loaded -->
-  <div class="container" id="productsContainer"></div>
-
-  <!-- Modal for product details -->
-  <div id="product-modal" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal()">&times;</span>
-      <h2 id="modal-title"></h2>
-      <p id="modal-description"></p>
-      <img id="modal-image" src="" alt="Product Image">
+  // Create the admin panel interface if not already present
+  let container = document.querySelector(".container");
+  if (!container) {
+    container = document.createElement("div");
+    container.className = "container";
+    document.body.appendChild(container);
+  }
+  container.innerHTML = `
+    <h1>Admin Panel</h1>
+    <form id="productForm">
+      <input type="text" id="productTitle" placeholder="Product Title" required>
+      <textarea id="productDescription" placeholder="Product Description" required></textarea>
+      <input type="file" id="productImage" accept="image/*" required>
+      <button type="submit">Add Product</button>
+    </form>
+    <div class="product-list" id="productList">
+      <h2>Products</h2>
+      <div id="productsContainer"></div>
     </div>
-  </div>
+  `;
 
-  <div class="footer">
-    <p>© Copyright All rights reserved 2025</p>
-  </div>
+  // Retrieve stored products from localStorage (if any)
+  let products = JSON.parse(localStorage.getItem("products")) || [];
 
-  <script>
-    // Initialize particles animation
-    particlesJS("particles-js", {
-      particles: {
-        number: { value: 100 },
-        size: { value: 3 },
-        move: { speed: 2 },
-        color: { value: "#ff69b4" },
-        line_linked: {
-          enable: true,
-          distance: 150,
-          color: "#ff69b4",
-          opacity: 0.4,
-          width: 1
-        }
-      }
+  // Function to display products in the admin panel
+  const displayProducts = () => {
+    const productsContainer = document.getElementById("productsContainer");
+    productsContainer.innerHTML = "";
+    products.forEach((product, index) => {
+      const div = document.createElement("div");
+      div.className = "product-item";
+      div.innerHTML = `
+        <img src="${product.image}" alt="Product Image">
+        <div class="product-info">
+          <h3>${product.title}</h3>
+          <p>${product.description}</p>
+        </div>
+        <button class="delete-btn" data-index="${index}">Delete</button>
+      `;
+      productsContainer.appendChild(div);
     });
+  };
 
-    // Function to show the product modal
-    function showModal(title, description, image) {
-      document.getElementById('modal-title').innerText = title;
-      document.getElementById('modal-description').innerText = description;
-      const modalImage = document.getElementById('modal-image');
-      if (image) {
-        modalImage.src = image;
-        modalImage.style.display = "block";
-      } else {
-        modalImage.style.display = "none";
-      }
-      document.getElementById('product-modal').style.display = 'flex';
+  displayProducts();
+
+  // Handle product form submission
+  document.getElementById("productForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const title = document.getElementById("productTitle").value.trim();
+    const description = document.getElementById("productDescription").value.trim();
+    const imageInput = document.getElementById("productImage");
+    const file = imageInput.files[0];
+
+    if (!file) return alert("Please select an image!");
+
+    // Use FileReader to convert the image file to a Base64 string
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      const imageData = event.target.result;
+      const newProduct = { title, description, image: imageData };
+      products.push(newProduct);
+      localStorage.setItem("products", JSON.stringify(products));
+      displayProducts();
+      // Reset the form after submission
+      document.getElementById("productForm").reset();
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Delegate event for deleting a product
+  document.getElementById("productsContainer").addEventListener("click", function(e) {
+    if (e.target.classList.contains("delete-btn")) {
+      const index = e.target.getAttribute("data-index");
+      products.splice(index, 1);
+      localStorage.setItem("products", JSON.stringify(products));
+      displayProducts();
     }
-
-    function closeModal() {
-      document.getElementById('product-modal').style.display = 'none';
-    }
-
-    // Dynamically load products from localStorage
-    document.addEventListener("DOMContentLoaded", function() {
-      let products = JSON.parse(localStorage.getItem("products")) || [];
-      const container = document.getElementById("productsContainer");
-      container.innerHTML = "";
-      products.forEach((product, index) => {
-        const productDiv = document.createElement("div");
-        productDiv.classList.add("product");
-        productDiv.onclick = function() {
-          showModal(product.title, product.description, product.image);
-        };
-        productDiv.innerHTML = `<h3>${product.title}</h3>`;
-        container.appendChild(productDiv);
-      });
-    });
-  </script>
-</body>
-</html>
+  });
+});
