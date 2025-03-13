@@ -22,7 +22,7 @@
       top: 0;
       left: 0;
     }
-    /* Wrap main content and provide bottom padding for footer */
+    /* Main content wrapper with bottom padding for footer */
     .content {
       padding-bottom: 60px; /* Reserve space for footer */
     }
@@ -36,8 +36,7 @@
       color: #fff;
       width: 70%;
       max-width: 400px;
-      margin-left: auto;
-      margin-right: auto;
+      margin: 20px auto 0;
       box-shadow: 0 4px 15px rgba(255, 105, 180, 0.3);
     }
     .container {
@@ -113,12 +112,15 @@
 </head>
 <body>
   <div id="particles-js"></div>
+  
   <div class="content">
     <div class="title-container">
       <h1>ıllı Pyeul Productions Shop</h1>
     </div>
+  
     <!-- Container where products will be dynamically loaded -->
     <div class="container" id="productsContainer"></div>
+  
     <!-- Modal for product details -->
     <div id="product-modal" class="modal">
       <div class="modal-content">
@@ -129,12 +131,65 @@
       </div>
     </div>
   </div>
+  
   <div class="footer">
     <p>© Copyright All rights reserved 2025</p>
   </div>
+  
   <script>
-    // Initialize particles animation
+    // Initialize particles animation (keeps the cool pink animations)
     particlesJS("particles-js", {
       particles: {
         number: { value: 100 },
-        size: { 
+        size: { value: 3 },
+        move: { speed: 2 },
+        color: { value: "#ff69b4" },
+        line_linked: {
+          enable: true,
+          distance: 150,
+          color: "#ff69b4",
+          opacity: 0.4,
+          width: 1
+        }
+      }
+    });
+  
+    // Function to show the product modal
+    function showModal(title, description, image) {
+      document.getElementById('modal-title').innerText = title;
+      document.getElementById('modal-description').innerText = description;
+      const modalImage = document.getElementById('modal-image');
+      if (image) {
+        modalImage.src = image;
+        modalImage.style.display = "block";
+      } else {
+        modalImage.style.display = "none";
+      }
+      document.getElementById('product-modal').style.display = 'flex';
+    }
+  
+    function closeModal() {
+      document.getElementById('product-modal').style.display = 'none';
+    }
+  
+    // Dynamically load products from localStorage
+    document.addEventListener("DOMContentLoaded", function() {
+      let products = JSON.parse(localStorage.getItem("products")) || [];
+      const container = document.getElementById("productsContainer");
+      container.innerHTML = "";
+      products.forEach((product, index) => {
+        const productDiv = document.createElement("div");
+        productDiv.classList.add("product");
+        productDiv.onclick = function() {
+          showModal(product.title, product.description, product.image);
+        };
+        productDiv.innerHTML = `
+          <img src="${product.image}" alt="${product.title}">
+          <h3>${product.title}</h3>
+        `;
+        container.appendChild(productDiv);
+      });
+    });
+  </script>
+</body>
+</html>
