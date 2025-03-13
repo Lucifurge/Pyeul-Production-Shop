@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
   fontAwesome.href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css";
   document.head.appendChild(fontAwesome);
 
-  // Inject Chart.js for statistics
+  // Inject Chart.js
   const chartJS = document.createElement("script");
   chartJS.src = "https://cdn.jsdelivr.net/npm/chart.js";
   document.head.appendChild(chartJS);
@@ -27,33 +27,27 @@ document.addEventListener("DOMContentLoaded", () => {
       <div class="bg-dark text-white p-3 vh-100" id="sidebar">
         <h4 class="mb-3">Dashboard</h4>
         <ul class="nav flex-column">
-          <li class="nav-item"><a href="#" class="nav-link text-white" id="navHome"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+          <li class="nav-item"><a href="#" class="nav-link text-white" id="navHome"><i class="fas fa-home"></i> Home</a></li>
           <li class="nav-item"><a href="#" class="nav-link text-white" id="navAddProduct"><i class="fas fa-plus"></i> Add Product</a></li>
           <li class="nav-item"><a href="#" class="nav-link text-white" id="navProducts"><i class="fas fa-box"></i> Products</a></li>
-          <li class="nav-item"><a href="#" class="nav-link text-white" id="navEditProducts"><i class="fas fa-edit"></i> Edit Products</a></li>
         </ul>
       </div>
 
       <div class="container-fluid p-4" id="mainContent">
-        <h2>Loading...</h2>
+        <h2>Welcome to the Admin Panel</h2>
+        <p>Use the sidebar to navigate.</p>
       </div>
     </div>
   `;
 
   const mainContent = document.getElementById("mainContent");
 
-  // Dashboard Section
-  const dashboardSection = `
-    <div class="row">
-      <div class="col-md-6">
-        <div class="card text-bg-primary shadow p-3">
-          <h4>Total Products</h4>
-          <h2 id="totalProducts">0</h2>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <canvas id="productChart"></canvas>
-      </div>
+  // Home Section (Dashboard with Chart)
+  const homeSection = `
+    <div class="card shadow p-4">
+      <h2>Dashboard</h2>
+      <p>Welcome, Admin!</p>
+      <canvas id="productChart" width="400" height="200"></canvas>
     </div>
   `;
 
@@ -91,22 +85,14 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
   `;
 
-  // Edit Products Section
-  const editProductsSection = `
-    <div class="card shadow p-4">
-      <h2>Edit Products</h2>
-      <div id="editProductsContainer" class="row"></div>
-    </div>
-  `;
-
   // Load Home Page Initially
-  mainContent.innerHTML = dashboardSection;
-  updateDashboard();
+  mainContent.innerHTML = homeSection;
+  setTimeout(updateChart, 500); // Wait for Chart.js to load before initializing the chart
 
   // Sidebar Navigation
   document.getElementById("navHome").addEventListener("click", () => {
-    mainContent.innerHTML = dashboardSection;
-    updateDashboard();
+    mainContent.innerHTML = homeSection;
+    setTimeout(updateChart, 500);
   });
   document.getElementById("navAddProduct").addEventListener("click", () => {
     mainContent.innerHTML = addProductSection;
@@ -115,10 +101,6 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("navProducts").addEventListener("click", () => {
     mainContent.innerHTML = productsSection;
     displayProducts();
-  });
-  document.getElementById("navEditProducts").addEventListener("click", () => {
-    mainContent.innerHTML = editProductsSection;
-    displayEditProducts();
   });
 
   // Dark Mode Toggle
@@ -130,23 +112,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Product Storage
   let products = JSON.parse(localStorage.getItem("products")) || [];
-
-  // Update Dashboard
-  function updateDashboard() {
-    document.getElementById("totalProducts").textContent = products.length;
-
-    const ctx = document.getElementById("productChart").getContext("2d");
-    new Chart(ctx, {
-      type: "doughnut",
-      data: {
-        labels: ["Total Products"],
-        datasets: [{
-          data: [products.length],
-          backgroundColor: ["#007bff"],
-        }]
-      }
-    });
-  }
 
   // Display Products
   function displayProducts() {
@@ -163,6 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <h5 class="card-title">${product.title}</h5>
             <p class="card-text">${product.description}</p>
             <a href="${product.link}" target="_blank" class="btn btn-primary"><i class="fas fa-shopping-cart"></i> Buy</a>
+            <button class="btn btn-warning mt-2 w-100 edit-btn" data-index="${index}"><i class="fas fa-edit"></i> Edit</button>
             <button class="btn btn-danger mt-2 w-100 delete-btn" data-index="${index}"><i class="fas fa-trash"></i> Delete</button>
           </div>
         </div>
@@ -176,14 +142,22 @@ document.addEventListener("DOMContentLoaded", () => {
         products.splice(index, 1);
         localStorage.setItem("products", JSON.stringify(products));
         displayProducts();
-        updateDashboard();
+        updateChart();
+      });
+    });
+
+    document.querySelectorAll(".edit-btn").forEach(button => {
+      button.addEventListener("click", function () {
+        const index = this.getAttribute("data-index");
+        editProduct(index);
       });
     });
   }
 
-  // Attach Form Listener
+  // Handle Form Submission
   function attachFormListener() {
-    document.getElementById("productForm").addEventListener("submit", function (e) {
+    const productForm = document.getElementById("productForm");
+    productForm.addEventListener("submit", function (e) {
       e.preventDefault();
 
       const title = document.getElementById("productTitle").value.trim();
@@ -195,11 +169,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const reader = new FileReader();
       reader.onload = function (event) {
-        products.push({ title, description, image: event.target.result, link });
+        const newProduct = { title, description, image: event.target.result, link };
+        products.push(newProduct);
         localStorage.setItem("products", JSON.stringify(products));
-        updateDashboard();
+        displayProducts();
+        updateChart();
+        productForm.reset();
       };
       reader.readAsDataURL(file);
     });
   }
+
+  // Edit Product
+  function editProduct(index) {
+    const product = products[index];
+    document.getElementById("productTitle").value = product.title;
+    document.getElementById("productDescription").value = product.description;
+    document.getElementById("productLink").value = product.link;
+  }
+
+  // Update Chart
+  function updateChart() {
+    const ctx = document.getElementById("productChart").getContext("2d");
+    new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: ["Total Products"],
+        datasets: [{ label: "Products", data: [products.length], backgroundColor: "blue" }]
+      }
+    });
+  }
+
+  displayProducts();
 });
