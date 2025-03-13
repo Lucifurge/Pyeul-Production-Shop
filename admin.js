@@ -1,28 +1,30 @@
-document.addEventListener("DOMContentLoaded", () => {
-  // Inject Bootstrap 5 CSS
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = 'https://ehrwsusgkzerozjnddib.supabase.co';
+const supabaseKey = process.env.SUPABASE_KEY;
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+document.addEventListener("DOMContentLoaded", async () => {
+  // Inject Bootstrap 5 and FontAwesome for styling
   const bootstrapCSS = document.createElement("link");
   bootstrapCSS.rel = "stylesheet";
   bootstrapCSS.href = "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css";
   document.head.appendChild(bootstrapCSS);
 
-  // Inject Font Awesome for icons
   const fontAwesome = document.createElement("link");
   fontAwesome.rel = "stylesheet";
   fontAwesome.href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css";
   document.head.appendChild(fontAwesome);
 
-  // Inject Custom Pinkish Theme
+  // Inject Pinkish Theme
   const customCSS = document.createElement("style");
   customCSS.innerHTML = `
     body { background-color: #fce4ec; color: #333; }
     .navbar { background-color: #ff80ab !important; }
-    .navbar-brand, .nav-link { color: white !important; }
     .sidebar { background-color: #ffb3c1; min-width: 250px; height: 100vh; }
-    .sidebar .nav-link { color: white; transition: 0.3s; }
-    .sidebar .nav-link:hover { background-color: #ff80ab; }
     .card { background: white; border: none; }
-    .btn-primary { background-color: #ff4081; border: none; }
-    .btn-danger { background-color: #ff1744; border: none; }
+    .btn-primary { background-color: #ff4081; }
+    .btn-danger { background-color: #ff1744; }
   `;
   document.head.appendChild(customCSS);
 
@@ -34,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
     </nav>
 
     <div class="d-flex">
-      <div class="sidebar p-3" id="sidebar">
+      <div class="sidebar p-3">
         <h4 class="mb-3 text-white">Dashboard</h4>
         <ul class="nav flex-column">
           <li class="nav-item"><a href="#" class="nav-link" id="navHome"><i class="fas fa-home"></i> Home</a></li>
@@ -43,16 +45,19 @@ document.addEventListener("DOMContentLoaded", () => {
         </ul>
       </div>
 
-      <div class="container-fluid p-4" id="mainContent">
-      </div>
+      <div class="container-fluid p-4" id="mainContent"></div>
     </div>
   `;
 
   const mainContent = document.getElementById("mainContent");
 
-  // Home Section with Statistics
-  function loadHome() {
-    let products = JSON.parse(localStorage.getItem("products")) || [];
+  // Load Home with Statistics from Supabase
+  async function loadHome() {
+    const { data: products, error } = await supabase.from("products").select("*");
+    if (error) {
+      console.error("Error fetching products:", error);
+      return;
+    }
     let totalProducts = products.length;
     let totalSales = totalProducts * 15; // Mock sales value
     let totalUsers = 25; // Mock users value
@@ -81,7 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   }
 
-  // Add Product Section
+  // Add Product Form
   const addProductSection = `
     <div class="card shadow p-4">
       <h2>Add Product</h2>
@@ -107,12 +112,17 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
   `;
 
-  // Products Section
-  function loadProducts() {
-    let products = JSON.parse(localStorage.getItem("products")) || [];
+  // Load Products from Supabase
+  async function loadProducts() {
+    const { data: products, error } = await supabase.from("products").select("*");
+    if (error) {
+      console.error("Error fetching products:", error);
+      return;
+    }
+
     let productsContent = products.length === 0 ? "<p>No products available.</p>" : "";
 
-    products.forEach((product, index) => {
+    products.forEach((product) => {
       productsContent += `
         <div class="col-md-4 mb-4">
           <div class="card shadow-sm">
@@ -121,7 +131,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <h5 class="card-title">${product.title}</h5>
               <p class="card-text">${product.description}</p>
               <a href="${product.link}" target="_blank" class="btn btn-primary"><i class="fas fa-shopping-cart"></i> Buy</a>
-              <button class="btn btn-danger mt-2 w-100 delete-btn" data-index="${index}"><i class="fas fa-trash"></i> Delete</button>
+              <button class="btn btn-danger mt-2 w-100 delete-btn" data-id="${product.id}"><i class="fas fa-trash"></i> Delete</button>
             </div>
           </div>
         </div>
@@ -131,13 +141,31 @@ document.addEventListener("DOMContentLoaded", () => {
     mainContent.innerHTML = `<div class="row">${productsContent}</div>`;
 
     document.querySelectorAll(".delete-btn").forEach(button => {
-      button.addEventListener("click", function () {
-        let index = this.getAttribute("data-index");
-        products.splice(index, 1);
-        localStorage.setItem("products", JSON.stringify(products));
+      button.addEventListener("click", async function () {
+        let productId = this.getAttribute("data-id");
+        await supabase.from("products").delete().eq("id", productId);
         loadProducts();
         loadHome(); // Refresh stats
       });
+    });
+  }
+
+  // Handle Form Submission
+  function attachFormListener() {
+    document.getElementById("productForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      let title = document.getElementById("productTitle").value.trim();
+      let description = document.getElementById("productDescription").value.trim();
+      let link = document.getElementById("productLink").value.trim();
+      let file = document.getElementById("productImage").files[0];
+
+      let reader = new FileReader();
+      reader.onload = async function (event) {
+        await supabase.from("products").insert([{ title, description, image: event.target.result, link }]);
+        loadProducts();
+        loadHome();
+      };
+      reader.readAsDataURL(file);
     });
   }
 
@@ -148,34 +176,6 @@ document.addEventListener("DOMContentLoaded", () => {
     attachFormListener();
   });
   document.getElementById("navProducts").addEventListener("click", () => loadProducts());
-
-  // Dark Mode Toggle
-  document.getElementById("toggleDarkMode").addEventListener("click", () => {
-    document.body.classList.toggle("bg-dark");
-    document.body.classList.toggle("text-white");
-    document.getElementById("sidebar").classList.toggle("bg-secondary");
-  });
-
-  // Handle Form Submission
-  function attachFormListener() {
-    document.getElementById("productForm").addEventListener("submit", function (e) {
-      e.preventDefault();
-      let products = JSON.parse(localStorage.getItem("products")) || [];
-      let title = document.getElementById("productTitle").value.trim();
-      let description = document.getElementById("productDescription").value.trim();
-      let link = document.getElementById("productLink").value.trim();
-      let file = document.getElementById("productImage").files[0];
-
-      let reader = new FileReader();
-      reader.onload = function (event) {
-        products.push({ title, description, image: event.target.result, link });
-        localStorage.setItem("products", JSON.stringify(products));
-        loadProducts();
-        loadHome();
-      };
-      reader.readAsDataURL(file);
-    });
-  }
 
   loadHome();
 });
