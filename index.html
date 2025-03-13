@@ -1,151 +1,177 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pyeul Production Shop</title>
-    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
-     <script src="admin.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            font-weight: bold;
-            margin: 0;
-            background-color: #000;
-        }
-        #particles-js {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            top: 0;
-            left: 0;
-        }
-        .title-container {
-            text-align: center;
-            margin-top: 20px;
-            padding: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            border: 2px solid #ff69b4;
-            border-radius: 12px;
-            color: #fff;
-            width: 70%;
-            max-width: 400px;
-            margin-left: auto;
-            margin-right: auto;
-            box-shadow: 0 4px 15px rgba(255, 105, 180, 0.3);
-        }
-        .container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-            margin-top: 50px;
-        }
-        .product {
-            border: 2px solid #ff69b4;
-            border-radius: 8px;
-            padding: 15px;
-            background-color: black;
-            opacity: 0.8;
-            width: 300px;
-            text-align: center;
-            box-shadow: 2px 2px 8px rgba(255, 105, 180, 0.3);
-            cursor: pointer;
-        }
-        .product h3, .product p {
-            color: #ff69b4;
-        }
-        .footer {
-            text-align: center;
-            color: #ff69b4;
-            margin-top: 50px;
-            padding: 10px 0;
-            border-top: 2px solid #ff69b4;
-            background: rgba(0, 0, 0, 0.9);
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            background: black;
-            padding: 20px;
-            border: 2px solid #ff69b4;
-            color: #fff;
-            width: 50%;
-            text-align: center;
-            border-radius: 8px;
-        }
-        .close {
-            color: #ff69b4;
-            font-size: 24px;
-            cursor: pointer;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pyeul Production Shop</title>
+  <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      font-weight: bold;
+      margin: 0;
+      background-color: #000;
+    }
+    #particles-js {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      top: 0;
+      left: 0;
+    }
+    .title-container {
+      text-align: center;
+      margin-top: 20px;
+      padding: 20px;
+      background: rgba(0, 0, 0, 0.7);
+      border: 2px solid #ff69b4;
+      border-radius: 12px;
+      color: #fff;
+      width: 70%;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+      box-shadow: 0 4px 15px rgba(255, 105, 180, 0.3);
+    }
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: center;
+      margin-top: 50px;
+    }
+    .product {
+      border: 2px solid #ff69b4;
+      border-radius: 8px;
+      padding: 15px;
+      background-color: black;
+      opacity: 0.8;
+      width: 300px;
+      text-align: center;
+      box-shadow: 2px 2px 8px rgba(255, 105, 180, 0.3);
+      cursor: pointer;
+    }
+    .product h3, .product p {
+      color: #ff69b4;
+    }
+    .footer {
+      text-align: center;
+      color: #ff69b4;
+      margin-top: 50px;
+      padding: 10px 0;
+      border-top: 2px solid #ff69b4;
+      background: rgba(0, 0, 0, 0.9);
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: black;
+      padding: 20px;
+      border: 2px solid #ff69b4;
+      color: #fff;
+      width: 50%;
+      text-align: center;
+      border-radius: 8px;
+    }
+    .close {
+      color: #ff69b4;
+      font-size: 24px;
+      cursor: pointer;
+    }
+    /* Optional: Style for modal images */
+    #modal-image {
+      max-width: 100%;
+      margin-top: 10px;
+      display: none;
+    }
+  </style>
 </head>
 <body>
-    <div id="particles-js"></div> 
+  <div id="particles-js"></div> 
 
-    <div class="title-container">
-        <h1>ıllı Pyeul Productions Shop</h1>
+  <div class="title-container">
+    <h1>ıllı Pyeul Productions Shop</h1>
+  </div>
+
+  <!-- Container where products will be dynamically loaded -->
+  <div class="container" id="productsContainer"></div>
+
+  <!-- Modal for product details -->
+  <div id="product-modal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h2 id="modal-title"></h2>
+      <p id="modal-description"></p>
+      <img id="modal-image" src="" alt="Product Image">
     </div>
+  </div>
 
-    <div class="container">
-        <div class="product" onclick="showModal('Product 1', 'This is a sample product description.')">
-            <h3>Product 1</h3>
-        </div>
-        <div class="product" onclick="showModal('Product 2', 'Another product with a different description.')">
-            <h3>Product 2</h3>
-        </div>
-    </div>
+  <div class="footer">
+    <p>© Copyright All rights reserved 2025</p>
+  </div>
 
-    <div id="product-modal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h2 id="modal-title"></h2>
-            <p id="modal-description"></p>
-        </div>
-    </div>
-
-    <div class="footer">
-        <p>© Copyright All rights reserved 2025</p>
-    </div>
-
-    <script>
-        particlesJS("particles-js", {
-            particles: {
-                number: { value: 100 },
-                size: { value: 3 },
-                move: { speed: 2 },
-                color: { value: "#ff69b4" },
-                line_linked: {
-                    enable: true,
-                    distance: 150,
-                    color: "#ff69b4",
-                    opacity: 0.4,
-                    width: 1
-                }
-            }
-        });
-
-        function showModal(title, description) {
-            document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-description').innerText = description;
-            document.getElementById('product-modal').style.display = 'flex';
+  <script>
+    // Initialize particles animation
+    particlesJS("particles-js", {
+      particles: {
+        number: { value: 100 },
+        size: { value: 3 },
+        move: { speed: 2 },
+        color: { value: "#ff69b4" },
+        line_linked: {
+          enable: true,
+          distance: 150,
+          color: "#ff69b4",
+          opacity: 0.4,
+          width: 1
         }
+      }
+    });
 
-        function closeModal() {
-            document.getElementById('product-modal').style.display = 'none';
-        }
-    </script>
+    // Function to show the product modal
+    function showModal(title, description, image) {
+      document.getElementById('modal-title').innerText = title;
+      document.getElementById('modal-description').innerText = description;
+      const modalImage = document.getElementById('modal-image');
+      if (image) {
+        modalImage.src = image;
+        modalImage.style.display = "block";
+      } else {
+        modalImage.style.display = "none";
+      }
+      document.getElementById('product-modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('product-modal').style.display = 'none';
+    }
+
+    // Dynamically load products from localStorage
+    document.addEventListener("DOMContentLoaded", function() {
+      let products = JSON.parse(localStorage.getItem("products")) || [];
+      const container = document.getElementById("productsContainer");
+      container.innerHTML = "";
+      products.forEach((product, index) => {
+        const productDiv = document.createElement("div");
+        productDiv.classList.add("product");
+        productDiv.onclick = function() {
+          showModal(product.title, product.description, product.image);
+        };
+        productDiv.innerHTML = `<h3>${product.title}</h3>`;
+        container.appendChild(productDiv);
+      });
+    });
+  </script>
 </body>
 </html>
