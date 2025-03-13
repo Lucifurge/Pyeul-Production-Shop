@@ -11,35 +11,37 @@ document.addEventListener("DOMContentLoaded", () => {
   fontAwesome.href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css";
   document.head.appendChild(fontAwesome);
 
-  // Inject Custom Pinkish Theme
+  // Inject Custom Modern Dark Theme with Blue Accents
   const customCSS = document.createElement("style");
   customCSS.innerHTML = `
-    body { background-color: #fce4ec; color: #333; }
-    .navbar { background-color: #ff80ab !important; }
-    .navbar-brand, .nav-link { color: white !important; }
-    .sidebar { background-color: #ffb3c1; min-width: 250px; height: 100vh; }
-    .sidebar .nav-link { color: white; transition: 0.3s; }
-    .sidebar .nav-link:hover { background-color: #ff80ab; }
-    .card { background: white; border: none; }
-    .btn-primary { background-color: #ff4081; border: none; }
-    .btn-danger { background-color: #ff1744; border: none; }
+    body { background-color: #121212; color: #E0E0E0; font-family: 'Poppins', sans-serif; }
+    .navbar { background-color: #1F1F1F !important; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3); }
+    .navbar-brand, .nav-link { color: #00AEEF !important; }
+    .sidebar { background-color: #1C1C1C; min-width: 260px; height: 100vh; padding: 1rem; box-shadow: 4px 0px 10px rgba(0, 0, 0, 0.3); }
+    .sidebar .nav-link { color: #E0E0E0; transition: 0.3s; padding: 10px; border-radius: 8px; }
+    .sidebar .nav-link:hover { background-color: #00AEEF; color: #121212; }
+    .card { background: #1E1E1E; border: none; color: #E0E0E0; border-radius: 12px; box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2); }
+    .btn-primary { background-color: #00AEEF; border: none; transition: 0.3s; }
+    .btn-primary:hover { background-color: #0086C9; }
+    .btn-danger { background-color: #D32F2F; border: none; transition: 0.3s; }
+    .btn-danger:hover { background-color: #B71C1C; }
   `;
   document.head.appendChild(customCSS);
 
   // Inject Admin Panel HTML
   document.body.innerHTML = `
     <nav class="navbar navbar-dark px-3">
-      <a class="navbar-brand" href="#">Admin Panel</a>
+      <a class="navbar-brand fw-bold" href="#">Admin Panel</a>
       <button class="btn btn-outline-light" id="toggleDarkMode"><i class="fas fa-moon"></i></button>
     </nav>
 
     <div class="d-flex">
-      <div class="sidebar p-3" id="sidebar">
-        <h4 class="mb-3 text-white">Dashboard</h4>
+      <div class="sidebar" id="sidebar">
+        <h4 class="mb-3 text-white fw-bold">Dashboard</h4>
         <ul class="nav flex-column">
-          <li class="nav-item"><a href="#" class="nav-link" id="navHome"><i class="fas fa-home"></i> Home</a></li>
-          <li class="nav-item"><a href="#" class="nav-link" id="navAddProduct"><i class="fas fa-plus"></i> Add Product</a></li>
-          <li class="nav-item"><a href="#" class="nav-link" id="navProducts"><i class="fas fa-box"></i> Products</a></li>
+          <li class="nav-item"><a href="#" class="nav-link" id="navHome"><i class="fas fa-home me-2"></i> Home</a></li>
+          <li class="nav-item"><a href="#" class="nav-link" id="navAddProduct"><i class="fas fa-plus me-2"></i> Add Product</a></li>
+          <li class="nav-item"><a href="#" class="nav-link" id="navProducts"><i class="fas fa-box me-2"></i> Products</a></li>
         </ul>
       </div>
 
@@ -60,21 +62,21 @@ document.addEventListener("DOMContentLoaded", () => {
     mainContent.innerHTML = `
       <div class="row">
         <div class="col-md-4">
-          <div class="card p-4 shadow">
+          <div class="card p-4 text-center">
             <h4>Total Products</h4>
-            <p class="fs-3">${totalProducts}</p>
+            <p class="fs-3 fw-bold text-info">${totalProducts}</p>
           </div>
         </div>
         <div class="col-md-4">
-          <div class="card p-4 shadow">
+          <div class="card p-4 text-center">
             <h4>Total Sales</h4>
-            <p class="fs-3">$${totalSales}</p>
+            <p class="fs-3 fw-bold text-success">$${totalSales}</p>
           </div>
         </div>
         <div class="col-md-4">
-          <div class="card p-4 shadow">
+          <div class="card p-4 text-center">
             <h4>Total Users</h4>
-            <p class="fs-3">${totalUsers}</p>
+            <p class="fs-3 fw-bold text-warning">${totalUsers}</p>
           </div>
         </div>
       </div>
@@ -83,8 +85,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Add Product Section
   const addProductSection = `
-    <div class="card shadow p-4">
-      <h2>Add Product</h2>
+    <div class="card p-4">
+      <h2 class="fw-bold">Add Product</h2>
       <form id="productForm">
         <div class="mb-3">
           <label class="form-label">Product Title</label>
@@ -115,10 +117,10 @@ document.addEventListener("DOMContentLoaded", () => {
     products.forEach((product, index) => {
       productsContent += `
         <div class="col-md-4 mb-4">
-          <div class="card shadow-sm">
+          <div class="card">
             <img src="${product.image}" class="card-img-top" alt="Product">
             <div class="card-body">
-              <h5 class="card-title">${product.title}</h5>
+              <h5 class="card-title fw-bold">${product.title}</h5>
               <p class="card-text">${product.description}</p>
               <a href="${product.link}" target="_blank" class="btn btn-primary"><i class="fas fa-shopping-cart"></i> Buy</a>
               <button class="btn btn-danger mt-2 w-100 delete-btn" data-index="${index}"><i class="fas fa-trash"></i> Delete</button>
@@ -136,7 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
         products.splice(index, 1);
         localStorage.setItem("products", JSON.stringify(products));
         loadProducts();
-        loadHome(); // Refresh stats
+        loadHome();
       });
     });
   }
