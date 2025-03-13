@@ -1,11 +1,10 @@
-document.addEventListener("DOMContentLoaded", () => {
-  // Inject Bootstrap 5 CSS
+document.addEventListener("DOMContentLoaded", async () => {
+  // Inject Bootstrap 5 and FontAwesome for styling
   const bootstrapCSS = document.createElement("link");
   bootstrapCSS.rel = "stylesheet";
   bootstrapCSS.href = "https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css";
   document.head.appendChild(bootstrapCSS);
 
-  // Inject Font Awesome for icons
   const fontAwesome = document.createElement("link");
   fontAwesome.rel = "stylesheet";
   fontAwesome.href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css";
@@ -25,6 +24,10 @@ document.addEventListener("DOMContentLoaded", () => {
     .btn-danger { background-color: #ff1744; border: none; }
   `;
   document.head.appendChild(customCSS);
+
+  const supabaseUrl = 'https://ehrwsusgkzerozjnddib.supabase.co';
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVocndzdXNna3plcm96am5kZGliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY0Nzk4OTgsImV4cCI6MjA1MjA1NTg5OH0.2gC_pxtLhwrAGA2wR6jvXKuIhNMe_L_IsMWgSa3KKds';
+  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
   // Inject Admin Panel HTML
   document.body.innerHTML = `
@@ -50,9 +53,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const mainContent = document.getElementById("mainContent");
 
-  // Home Section with Statistics
-  function loadHome() {
-    let products = JSON.parse(localStorage.getItem("products")) || [];
+  // Load Home with Statistics from Supabase
+  async function loadHome() {
+    const { data: products, error } = await supabase.from("products").select("*");
+    if (error) {
+      console.error("Error fetching products:", error);
+      return;
+    }
     let totalProducts = products.length;
     let totalSales = totalProducts * 15; // Mock sales value
     let totalUsers = 25; // Mock users value
@@ -107,12 +114,17 @@ document.addEventListener("DOMContentLoaded", () => {
     </div>
   `;
 
-  // Products Section
-  function loadProducts() {
-    let products = JSON.parse(localStorage.getItem("products")) || [];
+  // Load Products from Supabase
+  async function loadProducts() {
+    const { data: products, error } = await supabase.from("products").select("*");
+    if (error) {
+      console.error("Error fetching products:", error);
+      return;
+    }
+
     let productsContent = products.length === 0 ? "<p>No products available.</p>" : "";
 
-    products.forEach((product, index) => {
+    products.forEach((product) => {
       productsContent += `
         <div class="col-md-4 mb-4">
           <div class="card shadow-sm">
@@ -121,7 +133,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <h5 class="card-title">${product.title}</h5>
               <p class="card-text">${product.description}</p>
               <a href="${product.link}" target="_blank" class="btn btn-primary"><i class="fas fa-shopping-cart"></i> Buy</a>
-              <button class="btn btn-danger mt-2 w-100 delete-btn" data-index="${index}"><i class="fas fa-trash"></i> Delete</button>
+              <button class="btn btn-danger mt-2 w-100 delete-btn" data-id="${product.id}"><i class="fas fa-trash"></i> Delete</button>
             </div>
           </div>
         </div>
@@ -131,51 +143,17 @@ document.addEventListener("DOMContentLoaded", () => {
     mainContent.innerHTML = `<div class="row">${productsContent}</div>`;
 
     document.querySelectorAll(".delete-btn").forEach(button => {
-      button.addEventListener("click", function () {
-        let index = this.getAttribute("data-index");
-        products.splice(index, 1);
-        localStorage.setItem("products", JSON.stringify(products));
+      button.addEventListener("click", async function () {
+        let productId = this.getAttribute("data-id");
+        await supabase.from("products").delete().eq("id", productId);
         loadProducts();
         loadHome(); // Refresh stats
       });
     });
   }
 
-  // Sidebar Navigation
-  document.getElementById("navHome").addEventListener("click", () => loadHome());
-  document.getElementById("navAddProduct").addEventListener("click", () => {
-    mainContent.innerHTML = addProductSection;
-    attachFormListener();
-  });
-  document.getElementById("navProducts").addEventListener("click", () => loadProducts());
-
-  // Dark Mode Toggle
-  document.getElementById("toggleDarkMode").addEventListener("click", () => {
-    document.body.classList.toggle("bg-dark");
-    document.body.classList.toggle("text-white");
-    document.getElementById("sidebar").classList.toggle("bg-secondary");
-  });
-
   // Handle Form Submission
   function attachFormListener() {
-    document.getElementById("productForm").addEventListener("submit", function (e) {
+    document.getElementById("productForm").addEventListener("submit", async function (e) {
       e.preventDefault();
-      let products = JSON.parse(localStorage.getItem("products")) || [];
-      let title = document.getElementById("productTitle").value.trim();
-      let description = document.getElementById("productDescription").value.trim();
-      let link = document.getElementById("productLink").value.trim();
-      let file = document.getElementById("productImage").files[0];
-
-      let reader = new FileReader();
-      reader.onload = function (event) {
-        products.push({ title, description, image: event.target.result, link });
-        localStorage.setItem("products", JSON.stringify(products));
-        loadProducts();
-        loadHome();
-      };
-      reader.readAsDataURL(file);
-    });
-  }
-
-  loadHome();
-});
+     
