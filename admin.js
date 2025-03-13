@@ -11,10 +11,10 @@ document.addEventListener("DOMContentLoaded", () => {
   fontAwesome.href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css";
   document.head.appendChild(fontAwesome);
 
-  // Inject Chart.js for statistics
-  const chartScript = document.createElement("script");
-  chartScript.src = "https://cdn.jsdelivr.net/npm/chart.js";
-  document.head.appendChild(chartScript);
+  // Inject Chart.js for product statistics
+  const chartJS = document.createElement("script");
+  chartJS.src = "https://cdn.jsdelivr.net/npm/chart.js";
+  document.head.appendChild(chartJS);
 
   // Inject Custom CSS
   const customCSS = document.createElement("style");
@@ -28,7 +28,9 @@ document.addEventListener("DOMContentLoaded", () => {
     .btn-primary { background: linear-gradient(45deg, #ff6b81, #d63384); border: none; color: white; }
     .btn-danger { background: linear-gradient(45deg, #ff4d6d, #ff6b81); border: none; color: white; }
     .card { background: white; border: 1px solid #f8a5c2; box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.1); }
-    .chart-container { width: 100%; max-width: 600px; margin: auto; }
+    .alert-primary { background-color: #ffdde1; color: #d63384; border-color: #f8a5c2; }
+    .history-item { background-color: #fff0f6; border-left: 5px solid #d63384; padding: 10px; margin-bottom: 8px; 
+                    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.05); }
   `;
   document.head.appendChild(customCSS);
 
@@ -59,13 +61,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const mainContent = document.getElementById("mainContent");
 
-  // Home Section with Chart
+  // Home Section (Dashboard with Chart)
   const homeSection = `
     <div class="alert alert-primary">
       <h2>Dashboard</h2>
       <p>Welcome, Admin!</p>
     </div>
-    <div class="chart-container">
+
+    <div class="card shadow p-4">
+      <h3>Product Statistics</h3>
       <canvas id="productChart"></canvas>
     </div>
   `;
@@ -77,7 +81,6 @@ document.addEventListener("DOMContentLoaded", () => {
       <form id="productForm">
         <div class="mb-3"><label class="form-label">Title</label><input type="text" id="productTitle" class="form-control" required></div>
         <div class="mb-3"><label class="form-label">Description</label><textarea id="productDescription" class="form-control" required></textarea></div>
-        <div class="mb-3"><label class="form-label">Image</label><input type="file" id="productImage" class="form-control" accept="image/*" required></div>
         <div class="mb-3"><label class="form-label">Facebook Link</label><input type="text" id="productLink" class="form-control" required></div>
         <button type="submit" class="btn btn-primary w-100">Add Product</button>
       </form>
@@ -91,29 +94,50 @@ document.addEventListener("DOMContentLoaded", () => {
   const historySection = `<div class="card shadow p-4"><h2>History</h2><div id="historyContainer"></div></div>`;
 
   mainContent.innerHTML = homeSection;
+  displayProductChart();
 
   document.getElementById("navHome").addEventListener("click", () => {
     mainContent.innerHTML = homeSection;
-    updateChart();
+    displayProductChart();
   });
+
   document.getElementById("navAddProduct").addEventListener("click", () => {
     mainContent.innerHTML = addProductSection;
     attachFormListener();
   });
+
   document.getElementById("navProducts").addEventListener("click", () => {
     mainContent.innerHTML = productsSection;
     displayProducts();
   });
+
   document.getElementById("navHistory").addEventListener("click", () => {
     mainContent.innerHTML = historySection;
     displayHistory();
   });
 
-  document.getElementById("toggleDarkMode").addEventListener("click", () => {
-    document.body.classList.toggle("bg-dark");
-    document.body.classList.toggle("text-white");
-    document.getElementById("sidebar").classList.toggle("bg-secondary");
-  });
+  function displayProductChart() {
+    if (typeof Chart === "undefined") {
+      setTimeout(displayProductChart, 500);
+      return;
+    }
+
+    const ctx = document.getElementById("productChart").getContext("2d");
+    const productCounts = products.length;
+    const deletedCounts = history.filter(h => h.includes("Deleted")).length;
+
+    new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: ["Total Products", "Deleted Products"],
+        datasets: [{
+          label: "Product Statistics",
+          data: [productCounts, deletedCounts],
+          backgroundColor: ["#4caf50", "#ff4d4d"]
+        }]
+      }
+    });
+  }
 
   let products = JSON.parse(localStorage.getItem("products")) || [];
   let history = JSON.parse(localStorage.getItem("history")) || [];
@@ -127,50 +151,14 @@ document.addEventListener("DOMContentLoaded", () => {
       div.className = "col-md-4 mb-4";
       div.innerHTML = `
         <div class="card shadow-sm">
-          <img src="${product.image}" class="card-img-top" alt="Product">
           <div class="card-body">
             <h5 class="card-title">${product.title}</h5>
-            <p class="card-text">${product.description}</p>
-            <a href="${product.link}" target="_blank" class="btn btn-primary">Buy</a>
+            <a href="${product.link}" target="_blank" class="btn btn-primary">View</a>
             <button class="btn btn-danger mt-2 w-100 delete-btn" data-index="${index}">Delete</button>
           </div>
         </div>
       `;
       productsContainer.appendChild(div);
     });
-
-    document.querySelectorAll(".delete-btn").forEach(button => {
-      button.addEventListener("click", function () {
-        const index = this.getAttribute("data-index");
-        history.push(`Deleted: ${products[index].title}`);
-        products.splice(index, 1);
-        saveData();
-        displayProducts();
-      });
-    });
-  }
-
-  function attachFormListener() {
-    document.getElementById("productForm").addEventListener("submit", function (e) {
-      e.preventDefault();
-      const title = document.getElementById("productTitle").value.trim();
-      history.push(`Added: ${title}`);
-      saveData();
-      updateChart();
-    });
-  }
-
-  function saveData() {
-    localStorage.setItem("products", JSON.stringify(products));
-    localStorage.setItem("history", JSON.stringify(history));
-  }
-
-  function updateChart() {
-    setTimeout(() => {
-      new Chart(document.getElementById("productChart"), {
-        type: "bar",
-        data: { labels: ["Total Products"], datasets: [{ label: "Products", data: [products.length], backgroundColor: "#ff6b81" }] }
-      });
-    }, 500);
   }
 });
