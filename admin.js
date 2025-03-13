@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // Inject CSS
+  // Inject CSS for modern design
   const style = document.createElement("style");
   style.innerHTML = `
     /* Dark Mode */
@@ -8,20 +8,31 @@ document.addEventListener("DOMContentLoaded", () => {
     .sidebar a { color: #fff; }
     .sidebar a:hover { background-color: #444; }
     .form-section, .products-section { color: #fff; }
-
+    
     /* Common Styles */
-    .topnav { padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; }
+    body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #f4f4f4; }
+    .topnav { background-color: #333; color: #fff; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
     .toggle-btn { font-size: 20px; cursor: pointer; color: #fff; }
-    .sidebar { position: fixed; top: 50px; left: 0; width: 200px; height: 100%; padding-top: 20px; transition: transform 0.3s ease; transform: translateX(0); }
+    .sidebar { position: fixed; top: 50px; left: 0; width: 200px; height: 100%; padding-top: 20px; transition: transform 0.3s ease; transform: translateX(0); box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
     .sidebar.hide { transform: translateX(-100%); }
-    .sidebar a { padding: 10px 20px; display: block; text-decoration: none; }
+    .sidebar a { padding: 10px 20px; display: block; text-decoration: none; color: #fff; }
+    .sidebar a:hover { background-color: #444; }
     .main-content { margin-left: 200px; padding: 20px; transition: margin-left 0.3s ease; }
     .full-width { margin-left: 0; }
-    .form-section, .products-section { padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
-    button { padding: 10px; background-color: #ff69b4; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+    .form-section, .products-section { padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; background-color: #fff; }
+    .form-section.dark-mode, .products-section.dark-mode { background-color: #1e1e1e; }
+    button { padding: 10px; background-color: #ff69b4; color: #fff; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.3s ease; }
+    button:hover { background-color: #ff4791; }
     .product-item { display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #ddd; }
     .product-item img { max-width: 100px; margin-right: 20px; border-radius: 4px; object-fit: cover; }
     .delete-btn { background: #d9534f; color: #fff; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
+    .delete-btn:hover { background: #c9302c; }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .main-content { margin-left: 0; padding: 10px; }
+      .sidebar { width: 150px; }
+    }
   `;
   document.head.appendChild(style);
 
@@ -93,6 +104,11 @@ document.addEventListener("DOMContentLoaded", () => {
   // Dark Mode Toggle
   document.getElementById("toggleDarkMode").addEventListener("click", () => {
     document.body.classList.toggle("dark-mode");
+
+    // Toggle dark mode for form and products sections
+    document.querySelectorAll('.form-section, .products-section').forEach(section => {
+      section.classList.toggle('dark-mode');
+    });
   });
 
   // Retrieve Stored Products
