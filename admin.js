@@ -47,46 +47,16 @@ document.addEventListener("DOMContentLoaded", async () => {
       </div>
 
       <div class="container-fluid p-4" id="mainContent">
+        <h2>Welcome to the Admin Panel</h2>
+        <p>Use the sidebar to navigate.</p>
       </div>
     </div>
   `;
 
   const mainContent = document.getElementById("mainContent");
 
-  // Load Home with Statistics from Supabase
-  async function loadHome() {
-    const { data: products, error } = await supabase.from("products").select("*");
-    if (error) {
-      console.error("Error fetching products:", error);
-      return;
-    }
-    let totalProducts = products.length;
-    let totalSales = totalProducts * 15; // Mock sales value
-    let totalUsers = 25; // Mock users value
-
-    mainContent.innerHTML = `
-      <div class="row">
-        <div class="col-md-4">
-          <div class="card p-4 shadow">
-            <h4>Total Products</h4>
-            <p class="fs-3">${totalProducts}</p>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="card p-4 shadow">
-            <h4>Total Sales</h4>
-            <p class="fs-3">$${totalSales}</p>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="card p-4 shadow">
-            <h4>Total Users</h4>
-            <p class="fs-3">${totalUsers}</p>
-          </div>
-        </div>
-      </div>
-    `;
-  }
+  // Home Section
+  const homeSection = `<div class="alert alert-primary"><h2>Dashboard</h2><p>Welcome, Admin!</p></div>`;
 
   // Add Product Section
   const addProductSection = `
@@ -114,39 +84,67 @@ document.addEventListener("DOMContentLoaded", async () => {
     </div>
   `;
 
-  // Load Products from Supabase
-  async function loadProducts() {
+  // Products Section
+  const productsSection = `
+    <div class="card shadow p-4">
+      <h2>Products</h2>
+      <div id="productsContainer" class="row"></div>
+    </div>
+  `;
+
+  // Load Home Page Initially
+  mainContent.innerHTML = homeSection;
+
+  // Sidebar Navigation
+  document.getElementById("navHome").addEventListener("click", () => mainContent.innerHTML = homeSection);
+  document.getElementById("navAddProduct").addEventListener("click", () => {
+    mainContent.innerHTML = addProductSection;
+    attachFormListener();
+  });
+  document.getElementById("navProducts").addEventListener("click", () => {
+    mainContent.innerHTML = productsSection;
+    displayProducts();
+  });
+
+  // Dark Mode Toggle
+  document.getElementById("toggleDarkMode").addEventListener("click", () => {
+    document.body.classList.toggle("bg-dark");
+    document.body.classList.toggle("text-white");
+    document.getElementById("sidebar").classList.toggle("bg-secondary");
+  });
+
+  // Load Products from Supabase and Display
+  async function displayProducts() {
     const { data: products, error } = await supabase.from("products").select("*");
     if (error) {
       console.error("Error fetching products:", error);
       return;
     }
-
-    let productsContent = products.length === 0 ? "<p>No products available.</p>" : "";
+    const productsContainer = document.getElementById("productsContainer");
+    productsContainer.innerHTML = products.length === 0 ? "<p>No products available.</p>" : "";
 
     products.forEach((product) => {
-      productsContent += `
-        <div class="col-md-4 mb-4">
-          <div class="card shadow-sm">
-            <img src="${product.image}" class="card-img-top" alt="Product">
-            <div class="card-body">
-              <h5 class="card-title">${product.title}</h5>
-              <p class="card-text">${product.description}</p>
-              <a href="${product.link}" target="_blank" class="btn btn-primary"><i class="fas fa-shopping-cart"></i> Buy</a>
-              <button class="btn btn-danger mt-2 w-100 delete-btn" data-id="${product.id}"><i class="fas fa-trash"></i> Delete</button>
-            </div>
+      const div = document.createElement("div");
+      div.className = "col-md-4 mb-4";
+      div.innerHTML = `
+        <div class="card shadow-sm">
+          <img src="${product.image}" class="card-img-top" alt="Product">
+          <div class="card-body">
+            <h5 class="card-title">${product.title}</h5>
+            <p class="card-text">${product.description}</p>
+            <a href="${product.link}" target="_blank" class="btn btn-primary"><i class="fas fa-shopping-cart"></i> Buy</a>
+            <button class="btn btn-danger mt-2 w-100 delete-btn" data-id="${product.id}"><i class="fas fa-trash"></i> Delete</button>
           </div>
         </div>
       `;
+      productsContainer.appendChild(div);
     });
-
-    mainContent.innerHTML = `<div class="row">${productsContent}</div>`;
 
     document.querySelectorAll(".delete-btn").forEach(button => {
       button.addEventListener("click", async function () {
-        let productId = this.getAttribute("data-id");
+        const productId = this.getAttribute("data-id");
         await supabase.from("products").delete().eq("id", productId);
-        loadProducts();
+        displayProducts();
         loadHome(); // Refresh stats
       });
     });
@@ -156,4 +154,23 @@ document.addEventListener("DOMContentLoaded", async () => {
   function attachFormListener() {
     document.getElementById("productForm").addEventListener("submit", async function (e) {
       e.preventDefault();
-     
+      const title = document.getElementById("productTitle").value.trim();
+      const description = document.getElementById("productDescription").value.trim();
+      const link = document.getElementById("productLink").value.trim();
+      const file = document.getElementById("productImage").files[0];
+
+      if (!file) return alert("Please select an image!");
+
+      const reader = new FileReader();
+      reader.onload = async function (event) {
+        await supabase.from("products").insert([{ title, description, image: event.target.result, link }]);
+        displayProducts();
+        loadHome();
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  loadHome();
+  displayProducts();
+});
