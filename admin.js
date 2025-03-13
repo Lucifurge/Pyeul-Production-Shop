@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", () => { 
   // Inject CSS
   const style = document.createElement("style");
   style.innerHTML = `
