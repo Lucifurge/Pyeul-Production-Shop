@@ -11,82 +11,102 @@ document.addEventListener("DOMContentLoaded", () => {
   fontAwesome.href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css";
   document.head.appendChild(fontAwesome);
 
-  // Inject Custom Modern Dark Theme with Blue Accents
+  // Inject Chart.js for statistics
+  const chartScript = document.createElement("script");
+  chartScript.src = "https://cdn.jsdelivr.net/npm/chart.js";
+  document.head.appendChild(chartScript);
+
+  // Custom GitHub-like Theme with Gold Accents
   const customCSS = document.createElement("style");
   customCSS.innerHTML = `
-    body { background-color: #121212; color: #E0E0E0; font-family: 'Poppins', sans-serif; }
-    .navbar { background-color: #1F1F1F !important; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3); }
-    .navbar-brand, .nav-link { color: #00AEEF !important; }
-    .sidebar { background-color: #1C1C1C; min-width: 260px; height: 100vh; padding: 1rem; box-shadow: 4px 0px 10px rgba(0, 0, 0, 0.3); }
-    .sidebar .nav-link { color: #E0E0E0; transition: 0.3s; padding: 10px; border-radius: 8px; }
-    .sidebar .nav-link:hover { background-color: #00AEEF; color: #121212; }
-    .card { background: #1E1E1E; border: none; color: #E0E0E0; border-radius: 12px; box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2); }
-    .btn-primary { background-color: #00AEEF; border: none; transition: 0.3s; }
-    .btn-primary:hover { background-color: #0086C9; }
-    .btn-danger { background-color: #D32F2F; border: none; transition: 0.3s; }
-    .btn-danger:hover { background-color: #B71C1C; }
+    body { background-color: #0d1117; color: #c9d1d9; font-family: 'Arial', sans-serif; }
+    .navbar { background-color: #161b22 !important; }
+    .navbar-brand, .nav-link { color: white !important; }
+    .sidebar { background-color: #161b22; min-width: 250px; height: 100vh; padding-top: 20px; }
+    .sidebar .nav-link { color: #c9d1d9; transition: 0.3s; }
+    .sidebar .nav-link:hover { background-color: #21262d; color: gold; }
+    .card { background: #161b22; border: 1px solid #30363d; color: #c9d1d9; }
+    .btn-primary { background-color: gold; border: none; color: black; }
+    .btn-danger { background-color: #ff1744; border: none; }
+    .gold-text { color: gold; }
+    canvas { background: #161b22; border-radius: 10px; padding: 10px; }
   `;
   document.head.appendChild(customCSS);
 
   // Inject Admin Panel HTML
   document.body.innerHTML = `
     <nav class="navbar navbar-dark px-3">
-      <a class="navbar-brand fw-bold" href="#">Admin Panel</a>
+      <a class="navbar-brand" href="#"><i class="fas fa-cog gold-text"></i> Admin Panel</a>
       <button class="btn btn-outline-light" id="toggleDarkMode"><i class="fas fa-moon"></i></button>
     </nav>
 
     <div class="d-flex">
-      <div class="sidebar" id="sidebar">
-        <h4 class="mb-3 text-white fw-bold">Dashboard</h4>
+      <div class="sidebar p-3" id="sidebar">
+        <h4 class="mb-3 gold-text">Dashboard</h4>
         <ul class="nav flex-column">
-          <li class="nav-item"><a href="#" class="nav-link" id="navHome"><i class="fas fa-home me-2"></i> Home</a></li>
-          <li class="nav-item"><a href="#" class="nav-link" id="navAddProduct"><i class="fas fa-plus me-2"></i> Add Product</a></li>
-          <li class="nav-item"><a href="#" class="nav-link" id="navProducts"><i class="fas fa-box me-2"></i> Products</a></li>
+          <li class="nav-item"><a href="#" class="nav-link" id="navHome"><i class="fas fa-home"></i> Home</a></li>
+          <li class="nav-item"><a href="#" class="nav-link" id="navAddProduct"><i class="fas fa-plus"></i> Add Product</a></li>
+          <li class="nav-item"><a href="#" class="nav-link" id="navProducts"><i class="fas fa-box"></i> Products</a></li>
         </ul>
       </div>
 
-      <div class="container-fluid p-4" id="mainContent">
-      </div>
+      <div class="container-fluid p-4" id="mainContent"></div>
     </div>
   `;
 
   const mainContent = document.getElementById("mainContent");
 
-  // Home Section with Statistics
+  // Home Section with Statistics and Chart
   function loadHome() {
     let products = JSON.parse(localStorage.getItem("products")) || [];
     let totalProducts = products.length;
-    let totalSales = totalProducts * 15; // Mock sales value
-    let totalUsers = 25; // Mock users value
+    let totalSales = totalProducts * 15;
+    let totalUsers = 25;
 
     mainContent.innerHTML = `
       <div class="row">
         <div class="col-md-4">
-          <div class="card p-4 text-center">
-            <h4>Total Products</h4>
-            <p class="fs-3 fw-bold text-info">${totalProducts}</p>
+          <div class="card p-4 shadow">
+            <h4 class="gold-text">Total Products</h4>
+            <p class="fs-3">${totalProducts}</p>
           </div>
         </div>
         <div class="col-md-4">
-          <div class="card p-4 text-center">
-            <h4>Total Sales</h4>
-            <p class="fs-3 fw-bold text-success">$${totalSales}</p>
+          <div class="card p-4 shadow">
+            <h4 class="gold-text">Total Sales</h4>
+            <p class="fs-3">$${totalSales}</p>
           </div>
         </div>
         <div class="col-md-4">
-          <div class="card p-4 text-center">
-            <h4>Total Users</h4>
-            <p class="fs-3 fw-bold text-warning">${totalUsers}</p>
+          <div class="card p-4 shadow">
+            <h4 class="gold-text">Total Users</h4>
+            <p class="fs-3">${totalUsers}</p>
           </div>
         </div>
       </div>
+      <canvas id="dashboardChart" class="mt-4"></canvas>
     `;
+
+    setTimeout(() => {
+      const ctx = document.getElementById("dashboardChart").getContext("2d");
+      new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: ["Products", "Sales", "Users"],
+          datasets: [{
+            label: "Statistics",
+            data: [totalProducts, totalSales, totalUsers],
+            backgroundColor: ["gold", "#ff1744", "lightblue"],
+          }],
+        },
+      });
+    }, 500);
   }
 
   // Add Product Section
   const addProductSection = `
-    <div class="card p-4">
-      <h2 class="fw-bold">Add Product</h2>
+    <div class="card shadow p-4">
+      <h2 class="gold-text">Add Product</h2>
       <form id="productForm">
         <div class="mb-3">
           <label class="form-label">Product Title</label>
@@ -99,10 +119,6 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="mb-3">
           <label class="form-label">Product Image</label>
           <input type="file" id="productImage" class="form-control" accept="image/*" required>
-        </div>
-        <div class="mb-3">
-          <label class="form-label">Facebook Link</label>
-          <input type="text" id="productLink" class="form-control" required>
         </div>
         <button type="submit" class="btn btn-primary w-100">Add Product</button>
       </form>
@@ -117,12 +133,11 @@ document.addEventListener("DOMContentLoaded", () => {
     products.forEach((product, index) => {
       productsContent += `
         <div class="col-md-4 mb-4">
-          <div class="card">
+          <div class="card shadow-sm">
             <img src="${product.image}" class="card-img-top" alt="Product">
             <div class="card-body">
-              <h5 class="card-title fw-bold">${product.title}</h5>
+              <h5 class="card-title">${product.title}</h5>
               <p class="card-text">${product.description}</p>
-              <a href="${product.link}" target="_blank" class="btn btn-primary"><i class="fas fa-shopping-cart"></i> Buy</a>
               <button class="btn btn-danger mt-2 w-100 delete-btn" data-index="${index}"><i class="fas fa-trash"></i> Delete</button>
             </div>
           </div>
@@ -143,41 +158,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Sidebar Navigation
-  document.getElementById("navHome").addEventListener("click", () => loadHome());
+  document.getElementById("navHome").addEventListener("click", loadHome);
   document.getElementById("navAddProduct").addEventListener("click", () => {
     mainContent.innerHTML = addProductSection;
-    attachFormListener();
   });
-  document.getElementById("navProducts").addEventListener("click", () => loadProducts());
-
-  // Dark Mode Toggle
-  document.getElementById("toggleDarkMode").addEventListener("click", () => {
-    document.body.classList.toggle("bg-dark");
-    document.body.classList.toggle("text-white");
-    document.getElementById("sidebar").classList.toggle("bg-secondary");
-  });
-
-  // Handle Form Submission
-  function attachFormListener() {
-    document.getElementById("productForm").addEventListener("submit", function (e) {
-      e.preventDefault();
-      let products = JSON.parse(localStorage.getItem("products")) || [];
-      let title = document.getElementById("productTitle").value.trim();
-      let description = document.getElementById("productDescription").value.trim();
-      let link = document.getElementById("productLink").value.trim();
-      let file = document.getElementById("productImage").files[0];
-
-      let reader = new FileReader();
-      reader.onload = function (event) {
-        products.push({ title, description, image: event.target.result, link });
-        localStorage.setItem("products", JSON.stringify(products));
-        loadProducts();
-        loadHome();
-      };
-      reader.readAsDataURL(file);
-    });
-  }
+  document.getElementById("navProducts").addEventListener("click", loadProducts);
 
   loadHome();
 });
