@@ -30,7 +30,7 @@
       text-align: center;
       margin-top: 20px;
       padding: 20px;
-      background: rgba(0, 0, 0, 0.7);
+      background: rgba(0, 0, 0, 0.3); /* more transparent so particles show */
       border: 2px solid #ff69b4;
       border-radius: 12px;
       color: #fff;
@@ -50,12 +50,15 @@
       border: 2px solid #ff69b4;
       border-radius: 8px;
       padding: 15px;
-      background-color: black;
-      opacity: 0.8;
+      background-color: rgba(0, 0, 0, 0.3); /* more transparent background */
       width: 300px;
       text-align: center;
       box-shadow: 2px 2px 8px rgba(255, 105, 180, 0.3);
       cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .product:hover {
+      transform: scale(1.02);
     }
     .product h3, .product p {
       color: #ff69b4;
@@ -89,7 +92,7 @@
       align-items: center;
     }
     .modal-content {
-      background: black;
+      background: rgba(0, 0, 0, 0.7); /* slightly transparent */
       padding: 20px;
       border: 2px solid #ff69b4;
       color: #fff;
@@ -137,7 +140,7 @@
   </div>
   
   <script>
-    // Initialize particles animation (keeps the cool pink animations)
+    // Initialize particles animation (with pink particles)
     particlesJS("particles-js", {
       particles: {
         number: { value: 100 },
@@ -184,12 +187,4 @@
           showModal(product.title, product.description, product.image);
         };
         productDiv.innerHTML = `
-          <img src="${product.image}" alt="${product.title}">
-          <h3>${product.title}</h3>
-        `;
-        container.appendChild(productDiv);
-      });
-    });
-  </script>
-</body>
-</html>
+          <img src="${pro
