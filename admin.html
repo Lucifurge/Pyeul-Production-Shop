@@ -6,6 +6,7 @@
   <title>Admin Panel</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body { background-color: #0d1117; color: #c9d1d9; font-family: 'Arial', sans-serif; }
@@ -50,29 +51,29 @@
       let totalSales = totalProducts * 15;
       let totalUsers = 25;
 
-      mainContent.innerHTML = \`
+      mainContent.innerHTML = `
         <div class="row">
           <div class="col-md-4">
             <div class="card p-4 shadow">
               <h4 class="gold-text">Total Products</h4>
-              <p class="fs-3">\${totalProducts}</p>
+              <p class="fs-3">${totalProducts}</p>
             </div>
           </div>
           <div class="col-md-4">
             <div class="card p-4 shadow">
               <h4 class="gold-text">Total Sales</h4>
-              <p class="fs-3">$\${totalSales}</p>
+              <p class="fs-3">$${totalSales}</p>
             </div>
           </div>
           <div class="col-md-4">
             <div class="card p-4 shadow">
               <h4 class="gold-text">Total Users</h4>
-              <p class="fs-3">\${totalUsers}</p>
+              <p class="fs-3">${totalUsers}</p>
             </div>
           </div>
         </div>
         <canvas id="dashboardChart" class="mt-4"></canvas>
-      \`;
+      `;
 
       setTimeout(() => {
         const ctx = document.getElementById("dashboardChart").getContext("2d");
@@ -91,7 +92,7 @@
     }
 
     function loadAddProduct() {
-      mainContent.innerHTML = \`
+      mainContent.innerHTML = `
         <div class="card shadow p-4">
           <h2 class="gold-text">Add Product</h2>
           <form id="productForm">
@@ -107,29 +108,24 @@
               <label class="form-label">Product Image</label>
               <input type="file" id="productImage" class="form-control" accept="image/*" required>
             </div>
-            <div class="mb-3">
-              <label class="form-label">Facebook Link</label>
-              <input type="text" id="productLink" class="form-control" required>
-            </div>
             <button type="submit" class="btn btn-primary w-100">Add Product</button>
           </form>
         </div>
-      \`;
+      `;
 
       document.getElementById("productForm").addEventListener("submit", function (e) {
         e.preventDefault();
         const title = document.getElementById("productTitle").value;
         const description = document.getElementById("productDescription").value;
         const imageFile = document.getElementById("productImage").files[0];
-        const link = document.getElementById("productLink").value;
+
         if (!imageFile) return;
 
         const reader = new FileReader();
         reader.readAsDataURL(imageFile);
         reader.onload = function () {
-          const newProduct = { title, description, image: reader.result, link };
           let products = JSON.parse(localStorage.getItem("products")) || [];
-          products.push(newProduct);
+          products.push({ title, description, image: reader.result });
           localStorage.setItem("products", JSON.stringify(products));
           loadProducts();
           loadHome();
@@ -142,22 +138,30 @@
       let productsContent = products.length === 0 ? "<p>No products available.</p>" : "";
 
       products.forEach((product, index) => {
-        productsContent += \`
+        productsContent += `
           <div class="col-md-4 mb-4">
             <div class="card shadow-sm">
-              <img src="\${product.image}" class="card-img-top" alt="Product">
+              <img src="${product.image}" class="card-img-top" alt="Product">
               <div class="card-body">
-                <h5 class="card-title">\${product.title}</h5>
-                <p class="card-text">\${product.description}</p>
-                <a href="\${product.link}" class="btn btn-primary w-100" target="_blank">View on Facebook</a>
-                <button class="btn btn-danger mt-2 w-100 delete-btn" data-index="\${index}"><i class="fas fa-trash"></i> Delete</button>
+                <h5 class="card-title">${product.title}</h5>
+                <p class="card-text">${product.description}</p>
+                <button class="btn btn-danger mt-2 w-100 delete-btn" data-index="${index}"><i class="fas fa-trash"></i> Delete</button>
               </div>
             </div>
           </div>
-        \`;
+        `;
       });
 
-      mainContent.innerHTML = \`<div class="row">\${productsContent}</div>\`;
+      mainContent.innerHTML = `<div class="row">${productsContent}</div>`;
+
+      document.querySelectorAll(".delete-btn").forEach(button => {
+        button.addEventListener("click", function () {
+          let products = JSON.parse(localStorage.getItem("products"));
+          products.splice(this.dataset.index, 1);
+          localStorage.setItem("products", JSON.stringify(products));
+          loadProducts();
+        });
+      });
     }
 
     document.getElementById("navHome").addEventListener("click", loadHome);
