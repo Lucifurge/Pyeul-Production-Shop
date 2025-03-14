@@ -44,9 +44,8 @@
 <script>
   document.addEventListener("DOMContentLoaded", async () => {
     const supabaseUrl = "https://ehrwsusgkzerozjnddib.supabase.co";
-    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVocndzdXNna3plcm96am5kZGliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY0Nzk4OTgsImV4cCI6MjA1MjA1NTg5OH0.2gC_pxtLhwrAGA2wR6jvXKuIhNMe_L_IsMWgSa3KKds"; // Replace with an env variable
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVocndzdXNna3plcm96am5kZGliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY0Nzk4OTgsImV4cCI6MjA1MjA1NTg5OH0.2gC_pxtLhwrAGA2wR6jvXKuIhNMe_L_IsMWgSa3KKds";
     const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
     const mainContent = document.getElementById("mainContent");
 
     async function fetchTotalUsers() {
@@ -55,8 +54,8 @@
     }
 
     async function loadHome() {
-      let products = JSON.parse(localStorage.getItem("products")) || [];
-      let totalProducts = products.length;
+      let { data: products, error } = await supabase.from("products").select("*");
+      let totalProducts = error ? 0 : products.length;
       let totalSales = totalProducts * 15;
       let totalUsers = await fetchTotalUsers();
 
@@ -94,8 +93,19 @@
               label: "Statistics",
               data: [totalProducts, totalSales, totalUsers],
               backgroundColor: ["gold", "#ff1744", "lightblue"],
+              borderColor: "#c9d1d9",
+              borderWidth: 1,
             }],
           },
+          options: {
+            plugins: {
+              legend: { labels: { color: "#c9d1d9" } }
+            },
+            scales: {
+              x: { ticks: { color: "#c9d1d9" } },
+              y: { ticks: { color: "#c9d1d9" } }
+            }
+          }
         });
       }, 500);
     }
@@ -129,24 +139,28 @@
         const imageFile = document.getElementById("productImage").files[0];
 
         if (!imageFile) return;
+        const uniqueFileName = `${Date.now()}-${Math.random().toString(36).substring(7)}-${imageFile.name}`;
 
-        const reader = new FileReader();
-        reader.readAsDataURL(imageFile);
-        reader.onload = async function () {
-          let { data, error } = await supabase.from("products").insert([{ title, description, image: reader.result }]);
+        const { data: storageData, error: storageError } = await supabase.storage
+          .from("products")
+          .upload(`public/${uniqueFileName}`, imageFile, { cacheControl: "3600", upsert: false });
 
-          if (error) {
-            console.error("Error adding product:", error);
-          } else {
-            loadProducts();
-          }
-        };
+        if (storageError) {
+          alert("Error uploading image: " + storageError.message);
+          return;
+        }
+
+        const imageUrl = `https://ehrwsusgkzerozjnddib.supabase.co/storage/v1/object/public/products/${uniqueFileName}`;
+
+        await supabase.from("products").insert([{ title, description, image: imageUrl }]);
+        loadProducts();
       });
     }
 
     async function loadProducts() {
-      let { data: products, error } = await supabase.from("products").select("*");
+      mainContent.innerHTML = `<div class="text-center my-4"><i class="fas fa-spinner fa-spin fa-2x gold-text"></i></div>`;
 
+      let { data: products, error } = await supabase.from("products").select("*");
       if (error) {
         mainContent.innerHTML = "<p>Error fetching products.</p>";
         return;
@@ -176,15 +190,30 @@
       document.querySelectorAll(".delete-btn").forEach(button => {
         button.addEventListener("click", async function () {
           let productId = this.dataset.id;
-          await supabase.from("products").delete().eq("id", productId);
-          loadProducts();
+          if (!confirm("Are you sure you want to delete this product?")) return;
+
+          const { error } = await supabase.from("products").delete().eq("id", productId);
+          if (error) {
+            alert("Error deleting product: " + error.message);
+          } else {
+            loadProducts();
+          }
         });
       });
     }
 
-    document.getElementById("navHome").addEventListener("click", loadHome);
-    document.getElementById("navAddProduct").addEventListener("click", loadAddProduct);
-    document.getElementById("navProducts").addEventListener("click", loadProducts);
+    document.getElementById("navHome").addEventListener("click", function (event) {
+      event.preventDefault();
+      loadHome();
+    });
+    document.getElementById("navAddProduct").addEventListener("click", function (event) {
+      event.preventDefault();
+      loadAddProduct();
+    });
+    document.getElementById("navProducts").addEventListener("click", function (event) {
+      event.preventDefault();
+      loadProducts();
+    });
 
     loadHome();
   });
