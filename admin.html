@@ -19,7 +19,6 @@
     .btn-primary { background-color: gold; border: none; color: black; }
     .btn-danger { background-color: #ff1744; border: none; }
     .gold-text { color: gold; }
-    canvas { background: #161b22; border-radius: 10px; padding: 10px; }
   </style>
 </head>
 <body>
@@ -34,7 +33,6 @@
     <ul class="nav flex-column">
       <li class="nav-item"><a href="#" class="nav-link" id="navHome"><i class="fas fa-home"></i> Home</a></li>
       <li class="nav-item"><a href="#" class="nav-link" id="navAddProduct"><i class="fas fa-plus"></i> Add Product</a></li>
-      <li class="nav-item"><a href="#" class="nav-link" id="navProducts"><i class="fas fa-box"></i> Products</a></li>
     </ul>
   </div>
 
@@ -43,46 +41,29 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", async () => {
-    const supabaseUrl = "https://kvalsxfwesewceawuzse.supabase.co";
-    const supabaseKey = "YOUR_SUPABASE_KEY"; // Replace with your actual Supabase key
+    const supabaseUrl = "https://your-supabase-url";
+    const supabaseKey = "your-supabase-key";
     const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-
-    async function fetchTotalUsers() {
-      let { data, error } = await supabase.from("users").select("*");
-      return error ? 0 : data.length;
-    }
 
     async function loadHome() {
       let { data: products, error } = await supabase.from("products").select("*");
-      let totalProducts = error ? 0 : products.length;
-      let totalSales = totalProducts * 15;
-      let totalUsers = await fetchTotalUsers();
+      if (error) products = [];
 
-      document.getElementById("mainContent").innerHTML = `
-        <div class="row">
-          <div class="col-md-4"><div class="card p-4 shadow"><h4 class="gold-text">Total Products</h4><p class="fs-3">${totalProducts}</p></div></div>
-          <div class="col-md-4"><div class="card p-4 shadow"><h4 class="gold-text">Total Sales</h4><p class="fs-3">$${totalSales}</p></div></div>
-          <div class="col-md-4"><div class="card p-4 shadow"><h4 class="gold-text">Total Users</h4><p class="fs-3">${totalUsers}</p></div></div>
-        </div>
-        <canvas id="dashboardChart" class="mt-4"></canvas>
-      `;
-
-      setTimeout(() => {
-        const ctx = document.getElementById("dashboardChart").getContext("2d");
-        new Chart(ctx, {
-          type: "bar",
-          data: {
-            labels: ["Products", "Sales", "Users"],
-            datasets: [{
-              label: "Statistics",
-              data: [totalProducts, totalSales, totalUsers],
-              backgroundColor: ["gold", "#ff1744", "lightblue"],
-              borderColor: "#c9d1d9",
-              borderWidth: 1,
-            }],
-          }
-        });
-      }, 500);
+      let content = '<div class="row">';
+      products.forEach(product => {
+        content += `
+          <div class="col-md-4">
+            <div class="card p-4 shadow">
+              <img src="${product.image_url}" class="img-fluid mb-2" alt="${product.title}">
+              <h4 class="gold-text">${product.title}</h4>
+              <p>${product.description}</p>
+              <a href="${product.product_link}" target="_blank" class="btn btn-primary">Buy Now</a>
+            </div>
+          </div>
+        `;
+      });
+      content += '</div>';
+      document.getElementById("mainContent").innerHTML = content;
     }
 
     function loadAddProduct() {
@@ -92,8 +73,8 @@
           <form id="productForm">
             <div class="mb-3"><label class="form-label">Title</label><input type="text" id="productTitle" class="form-control" required></div>
             <div class="mb-3"><label class="form-label">Description</label><textarea id="productDescription" class="form-control" required></textarea></div>
-            <div class="mb-3"><label class="form-label">Image</label><input type="file" id="productImage" class="form-control" required></div>
-            <div class="mb-3"><label class="form-label">Facebook Link</label><input type="text" id="productLink" class="form-control" required></div>
+            <div class="mb-3"><label class="form-label">Image URL</label><input type="text" id="productImageURL" class="form-control" required></div>
+            <div class="mb-3"><label class="form-label">Product Link</label><input type="text" id="productLink" class="form-control" required></div>
             <button type="submit" class="btn btn-primary w-100">Add Product</button>
           </form>
         </div>
@@ -103,23 +84,10 @@
         e.preventDefault();
         const title = document.getElementById("productTitle").value;
         const description = document.getElementById("productDescription").value;
-        const imageFile = document.getElementById("productImage").files[0];
-        const fb_link = document.getElementById("productLink").value;
+        const image_url = document.getElementById("productImageURL").value;
+        const product_link = document.getElementById("productLink").value;
 
-        if (!imageFile) return;
-        const uniqueFileName = `${Date.now()}-${imageFile.name}`;
-
-        const { data: storageData, error: storageError } = await supabase.storage
-          .from("products")
-          .upload(`public/${uniqueFileName}`, imageFile, { cacheControl: "3600", upsert: false });
-
-        if (storageError) {
-          alert("Error uploading image: " + storageError.message);
-          return;
-        }
-
-        const image_url = `${supabaseUrl}/storage/v1/object/public/products/${uniqueFileName}`;
-        await supabase.from("products").insert([{ title, description, image_url, fb_link }]);
+        await supabase.from("products").insert([{ title, description, image_url, product_link }]);
         loadHome();
       });
     }
