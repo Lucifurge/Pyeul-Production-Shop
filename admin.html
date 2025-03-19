@@ -44,7 +44,7 @@
 <script>
 document.addEventListener("DOMContentLoaded", async () => {
   const supabaseUrl = "https://ehrwsusgkzerozjnddib.supabase.co";
-  const supabaseKey = "YOUR_SUPABASE_ANON_KEY"; // Replace with actual key
+  const supabaseKey = "YOUR_SUPABASE_ANON_KEY"; // Replace with your actual key
   const supabase = supabase.createClient(supabaseUrl, supabaseKey);
   const mainContent = document.getElementById("mainContent");
 
@@ -81,15 +81,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             borderColor: "#c9d1d9",
             borderWidth: 1,
           }],
-        },
-        options: {
-          plugins: {
-            legend: { labels: { color: "#c9d1d9" } }
-          },
-          scales: {
-            x: { ticks: { color: "#c9d1d9" } },
-            y: { ticks: { color: "#c9d1d9" } }
-          }
         }
       });
     }, 500);
@@ -114,7 +105,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const title = document.getElementById("productTitle").value;
       const description = document.getElementById("productDescription").value;
       const imageFile = document.getElementById("productImage").files[0];
-      const link = document.getElementById("productLink").value;
+      const fb_link = document.getElementById("productLink").value;
 
       if (!imageFile) return;
       const uniqueFileName = `${Date.now()}-${imageFile.name}`;
@@ -128,8 +119,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         return;
       }
 
-      const imageUrl = `${supabaseUrl}/storage/v1/object/public/products/${uniqueFileName}`;
-      await supabase.from("products").insert([{ title, description, image: imageUrl, link }]);
+      const image_url = `${supabaseUrl}/storage/v1/object/public/products/${uniqueFileName}`;
+      await supabase.from("products").insert([{ title, description, image_url, fb_link }]);
       loadProducts();
     });
   }
@@ -146,11 +137,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     mainContent.innerHTML = products.map(product => `
       <div class="col-md-4 mb-4">
         <div class="card shadow-sm">
-          <img src="${product.image}" class="card-img-top">
+          <img src="${product.image_url}" class="card-img-top">
           <div class="card-body">
             <h5>${product.title}</h5>
             <p>${product.description}</p>
-            <a href="${product.link}" class="btn btn-primary w-100" target="_blank">View</a>
+            <a href="${product.fb_link}" class="btn btn-primary w-100" target="_blank">View</a>
           </div>
         </div>
       </div>
