@@ -172,8 +172,8 @@
     });
 
     // Initialize Supabase
-    const supabaseUrl = "YOUR_SUPABASE_URL";
-    const supabaseKey = "YOUR_SUPABASE_ANON_KEY";
+    const supabaseUrl = "https://kvalsxfwesewceawuzse.supabase.com";
+    const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt2YWxzeGZ3ZXNld2NlYXd1enNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIzNjY1NzEsImV4cCI6MjA1Nzk0MjU3MX0.EEWJhvLiFJ8G9PB6UoX9TCBnzwy1V73if0ElvGywcr4";
     const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
     async function fetchProducts() {
