@@ -43,8 +43,8 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", async () => {
-  const supabaseUrl = "https://ehrwsusgkzerozjnddib.supabase.co";
-  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVocndzdXNna3plcm96am5kZGliIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY0Nzk4OTgsImV4cCI6MjA1MjA1NTg5OH0.2gC_pxtLhwrAGA2wR6jvXKuIhNMe_L_IsMWgSa3KKds"; // Replace with your actual key
+  const supabaseUrl = "https://kvalsxfwesewceawuzse.supabase.co";
+  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt2YWxzeGZ3ZXNld2NlYXd1enNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIzNjY1NzEsImV4cCI6MjA1Nzk0MjU3MX0.EEWJhvLiFJ8G9PB6UoX9TCBnzwy1V73if0ElvGywcr4"; 
   const supabase = supabase.createClient(supabaseUrl, supabaseKey);
   const mainContent = document.getElementById("mainContent");
 
@@ -111,7 +111,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const uniqueFileName = `${Date.now()}-${imageFile.name}`;
 
       const { data: storageData, error: storageError } = await supabase.storage
-        .from("products")
+        .from("products") 
         .upload(`public/${uniqueFileName}`, imageFile, { cacheControl: "3600", upsert: false });
 
       if (storageError) {
@@ -127,25 +127,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function loadProducts() {
     mainContent.innerHTML = `<div class="text-center my-4"><i class="fas fa-spinner fa-spin fa-2x gold-text"></i></div>`;
-
     let { data: products, error } = await supabase.from("products").select("*");
     if (error) {
       mainContent.innerHTML = "<p>Error fetching products.</p>";
       return;
     }
-
-    mainContent.innerHTML = products.map(product => `
-      <div class="col-md-4 mb-4">
-        <div class="card shadow-sm">
-          <img src="${product.image_url}" class="card-img-top">
-          <div class="card-body">
-            <h5>${product.title}</h5>
-            <p>${product.description}</p>
-            <a href="${product.fb_link}" class="btn btn-primary w-100" target="_blank">View</a>
-          </div>
-        </div>
-      </div>
-    `).join("");
   }
 
   document.getElementById("navHome").addEventListener("click", (e) => { e.preventDefault(); loadHome(); });
