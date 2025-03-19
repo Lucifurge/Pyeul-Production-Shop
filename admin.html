@@ -43,10 +43,12 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", async () => {
+let supabase; // Declare the variable earlier to avoid ReferenceErrors.
+document.addEventListener("DOMContentLoaded", async () => {
   const supabaseUrl = "https://kvalsxfwesewceawuzse.supabase.co";
-  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt2YWxzeGZ3ZXNld2NlYXd1enNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIzNjY1NzEsImV4cCI6MjA1Nzk0MjU3MX0.EEWJhvLiFJ8G9PB6UoX9TCBnzwy1V73if0ElvGywcr4"; 
-  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-  const mainContent = document.getElementById("mainContent");
+  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt2YWxzeGZ3ZXNld2NlYXd1enNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIzNjY1NzEsImV4cCI6MjA1Nzk0MjU3MX0.EEWJhvLiFJ8G9PB6UoX9TCBnzwy1V73if0ElvGywcr4";
+  supabase = supabase.createClient(supabaseUrl, supabaseKey); // Initialize it later here.
+});
 
   async function fetchTotalUsers() {
     let { data, error } = await supabase.from("users").select("*");
