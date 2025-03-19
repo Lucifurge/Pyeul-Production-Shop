@@ -42,105 +42,93 @@
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", async () => {
-let supabase; // Declare the variable earlier to avoid ReferenceErrors.
-document.addEventListener("DOMContentLoaded", async () => {
-  const supabaseUrl = "https://kvalsxfwesewceawuzse.supabase.co";
-  const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt2YWxzeGZ3ZXNld2NlYXd1enNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDIzNjY1NzEsImV4cCI6MjA1Nzk0MjU3MX0.EEWJhvLiFJ8G9PB6UoX9TCBnzwy1V73if0ElvGywcr4";
-  supabase = supabase.createClient(supabaseUrl, supabaseKey); // Initialize it later here.
-});
+  document.addEventListener("DOMContentLoaded", async () => {
+    const supabaseUrl = "https://kvalsxfwesewceawuzse.supabase.co";
+    const supabaseKey = "YOUR_SUPABASE_KEY"; // Replace with your actual Supabase key
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-  async function fetchTotalUsers() {
-    let { data, error } = await supabase.from("users").select("*");
-    return error ? 0 : data.length;
-  }
-
-  async function loadHome() {
-    let { data: products, error } = await supabase.from("products").select("*");
-    let totalProducts = error ? 0 : products.length;
-    let totalSales = totalProducts * 15;
-    let totalUsers = await fetchTotalUsers();
-
-    mainContent.innerHTML = `
-      <div class="row">
-        <div class="col-md-4"><div class="card p-4 shadow"><h4 class="gold-text">Total Products</h4><p class="fs-3">${totalProducts}</p></div></div>
-        <div class="col-md-4"><div class="card p-4 shadow"><h4 class="gold-text">Total Sales</h4><p class="fs-3">$${totalSales}</p></div></div>
-        <div class="col-md-4"><div class="card p-4 shadow"><h4 class="gold-text">Total Users</h4><p class="fs-3">${totalUsers}</p></div></div>
-      </div>
-      <canvas id="dashboardChart" class="mt-4"></canvas>
-    `;
-
-    setTimeout(() => {
-      const ctx = document.getElementById("dashboardChart").getContext("2d");
-      new Chart(ctx, {
-        type: "bar",
-        data: {
-          labels: ["Products", "Sales", "Users"],
-          datasets: [{
-            label: "Statistics",
-            data: [totalProducts, totalSales, totalUsers],
-            backgroundColor: ["gold", "#ff1744", "lightblue"],
-            borderColor: "#c9d1d9",
-            borderWidth: 1,
-          }],
-        }
-      });
-    }, 500);
-  }
-
-  function loadAddProduct() {
-    mainContent.innerHTML = `
-      <div class="card shadow p-4">
-        <h2 class="gold-text">Add Product</h2>
-        <form id="productForm">
-          <div class="mb-3"><label class="form-label">Title</label><input type="text" id="productTitle" class="form-control" required></div>
-          <div class="mb-3"><label class="form-label">Description</label><textarea id="productDescription" class="form-control" required></textarea></div>
-          <div class="mb-3"><label class="form-label">Image</label><input type="file" id="productImage" class="form-control" required></div>
-          <div class="mb-3"><label class="form-label">Facebook Link</label><input type="text" id="productLink" class="form-control" required></div>
-          <button type="submit" class="btn btn-primary w-100">Add Product</button>
-        </form>
-      </div>
-    `;
-
-    document.getElementById("productForm").addEventListener("submit", async function (e) {
-      e.preventDefault();
-      const title = document.getElementById("productTitle").value;
-      const description = document.getElementById("productDescription").value;
-      const imageFile = document.getElementById("productImage").files[0];
-      const fb_link = document.getElementById("productLink").value;
-
-      if (!imageFile) return;
-      const uniqueFileName = `${Date.now()}-${imageFile.name}`;
-
-      const { data: storageData, error: storageError } = await supabase.storage
-        .from("products") 
-        .upload(`public/${uniqueFileName}`, imageFile, { cacheControl: "3600", upsert: false });
-
-      if (storageError) {
-        alert("Error uploading image: " + storageError.message);
-        return;
-      }
-
-      const image_url = `${supabaseUrl}/storage/v1/object/public/products/${uniqueFileName}`;
-      await supabase.from("products").insert([{ title, description, image_url, fb_link }]);
-      loadProducts();
-    });
-  }
-
-  async function loadProducts() {
-    mainContent.innerHTML = `<div class="text-center my-4"><i class="fas fa-spinner fa-spin fa-2x gold-text"></i></div>`;
-    let { data: products, error } = await supabase.from("products").select("*");
-    if (error) {
-      mainContent.innerHTML = "<p>Error fetching products.</p>";
-      return;
+    async function fetchTotalUsers() {
+      let { data, error } = await supabase.from("users").select("*");
+      return error ? 0 : data.length;
     }
-  }
 
-  document.getElementById("navHome").addEventListener("click", (e) => { e.preventDefault(); loadHome(); });
-  document.getElementById("navAddProduct").addEventListener("click", (e) => { e.preventDefault(); loadAddProduct(); });
+    async function loadHome() {
+      let { data: products, error } = await supabase.from("products").select("*");
+      let totalProducts = error ? 0 : products.length;
+      let totalSales = totalProducts * 15;
+      let totalUsers = await fetchTotalUsers();
 
-  loadHome();
-});
+      document.getElementById("mainContent").innerHTML = `
+        <div class="row">
+          <div class="col-md-4"><div class="card p-4 shadow"><h4 class="gold-text">Total Products</h4><p class="fs-3">${totalProducts}</p></div></div>
+          <div class="col-md-4"><div class="card p-4 shadow"><h4 class="gold-text">Total Sales</h4><p class="fs-3">$${totalSales}</p></div></div>
+          <div class="col-md-4"><div class="card p-4 shadow"><h4 class="gold-text">Total Users</h4><p class="fs-3">${totalUsers}</p></div></div>
+        </div>
+        <canvas id="dashboardChart" class="mt-4"></canvas>
+      `;
+
+      setTimeout(() => {
+        const ctx = document.getElementById("dashboardChart").getContext("2d");
+        new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: ["Products", "Sales", "Users"],
+            datasets: [{
+              label: "Statistics",
+              data: [totalProducts, totalSales, totalUsers],
+              backgroundColor: ["gold", "#ff1744", "lightblue"],
+              borderColor: "#c9d1d9",
+              borderWidth: 1,
+            }],
+          }
+        });
+      }, 500);
+    }
+
+    function loadAddProduct() {
+      document.getElementById("mainContent").innerHTML = `
+        <div class="card shadow p-4">
+          <h2 class="gold-text">Add Product</h2>
+          <form id="productForm">
+            <div class="mb-3"><label class="form-label">Title</label><input type="text" id="productTitle" class="form-control" required></div>
+            <div class="mb-3"><label class="form-label">Description</label><textarea id="productDescription" class="form-control" required></textarea></div>
+            <div class="mb-3"><label class="form-label">Image</label><input type="file" id="productImage" class="form-control" required></div>
+            <div class="mb-3"><label class="form-label">Facebook Link</label><input type="text" id="productLink" class="form-control" required></div>
+            <button type="submit" class="btn btn-primary w-100">Add Product</button>
+          </form>
+        </div>
+      `;
+
+      document.getElementById("productForm").addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const title = document.getElementById("productTitle").value;
+        const description = document.getElementById("productDescription").value;
+        const imageFile = document.getElementById("productImage").files[0];
+        const fb_link = document.getElementById("productLink").value;
+
+        if (!imageFile) return;
+        const uniqueFileName = `${Date.now()}-${imageFile.name}`;
+
+        const { data: storageData, error: storageError } = await supabase.storage
+          .from("products")
+          .upload(`public/${uniqueFileName}`, imageFile, { cacheControl: "3600", upsert: false });
+
+        if (storageError) {
+          alert("Error uploading image: " + storageError.message);
+          return;
+        }
+
+        const image_url = `${supabaseUrl}/storage/v1/object/public/products/${uniqueFileName}`;
+        await supabase.from("products").insert([{ title, description, image_url, fb_link }]);
+        loadHome();
+      });
+    }
+
+    document.getElementById("navHome").addEventListener("click", (e) => { e.preventDefault(); loadHome(); });
+    document.getElementById("navAddProduct").addEventListener("click", (e) => { e.preventDefault(); loadAddProduct(); });
+
+    loadHome();
+  });
 </script>
 </body>
 </html>
